@@ -723,6 +723,7 @@ function drawAmount(card) {
 }
 
 function fireSpellDestroyLimit(card) {
+  if (card.id === "FS-001") return 2000;
   if (card.id === "FS-005") return 4000;
   return card.id === "FS-004" ? 5000 : 3000;
 }
@@ -1078,9 +1079,17 @@ async function discardFromOpponent(playerIndex, optional) {
   const opponentIndex = 1 - playerIndex;
   const opponent = state.players[opponentIndex];
   if (opponent.hand.length === 0) return;
-  const target = opponentIndex === HUMAN
-    ? chooseForcedDiscard(opponent.hand)
-    : chooseCpuDiscard(opponent, state.players[playerIndex]);
+  let target = null;
+  if (opponentIndex === HUMAN) {
+    try {
+      target = await chooseCard("捨てる手札", opponent.hand, optional);
+    } catch (error) {
+      if (error !== CARD_USE_CANCELLED) throw error;
+      target = chooseForcedDiscard(opponent.hand);
+    }
+  } else {
+    target = chooseCpuDiscard(opponent, state.players[playerIndex]);
+  }
   if (target) {
     removeByUid(opponent.hand, target.uid);
     opponent.grave.push(target);
