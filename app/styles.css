@@ -17,12 +17,12 @@
 body {
   margin: 0;
   min-width: 320px;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
+  overflow: auto;
 }
 
 button {
-  min-height: 30px;
+  min-height: 26px;
   border: 1px solid #8e887b;
   border-radius: 6px;
   background: #fffaf0;
@@ -43,12 +43,13 @@ button:disabled {
 .app-shell {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: 52px 58px minmax(0, 1fr);
+  grid-template-rows: 42px 50px minmax(0, 1fr);
   grid-template-areas:
     "topbar"
     "score"
     "field";
   height: 100vh;
+  min-height: 640px;
   overflow: hidden;
 }
 
@@ -57,41 +58,42 @@ button:disabled {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 8px 14px;
+  gap: 10px;
+  padding: 5px 10px;
   border-bottom: 1px solid #d8d0c2;
   background: #fff9ec;
 }
 
 .topbar h1 {
   margin: 0;
-  font-size: 22px;
+  font-size: 17px;
   line-height: 1.2;
 }
 
 .topbar p {
-  margin: 4px 0 0;
+  margin: 1px 0 0;
   color: #61594d;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .topbar-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 5px;
   justify-content: flex-end;
 }
 
 .topbar-actions button {
-  padding: 0 12px;
+  padding: 0 9px;
+  font-size: 12px;
 }
 
 .scoreboard {
   grid-area: score;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  padding: 6px 10px 0;
+  gap: 6px;
+  padding: 5px 8px 0;
 }
 
 .player-summary {
@@ -99,7 +101,7 @@ button:disabled {
   grid-template-columns: 1fr auto;
   gap: 8px;
   align-items: center;
-  padding: 7px 9px;
+  padding: 5px 8px;
   border: 1px solid #d8d0c2;
   border-radius: 8px;
   background: #fffaf0;
@@ -112,44 +114,44 @@ button:disabled {
 
 .player-summary h2 {
   margin: 0;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .stats {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  margin-top: 5px;
+  margin-top: 3px;
 }
 
 .stat {
-  padding: 2px 6px;
+  padding: 1px 5px;
   border-radius: 999px;
   background: #eee2cf;
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .battlefield {
   grid-area: field;
   min-height: 0;
-  padding: 6px 10px 10px;
+  padding: 5px 8px 8px;
   overflow: hidden;
 }
 
 .game-table {
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 0.9fr) minmax(0, 1.1fr);
   height: 100%;
   min-height: 0;
-  gap: 6px;
+  gap: 5px;
 }
 
 .duel-area {
   min-height: 0;
   display: grid;
-  grid-template-columns: 92px minmax(0, 1fr) 76px;
-  grid-template-rows: 26px minmax(0, 1fr) 44px minmax(0, 1fr);
+  grid-template-columns: 82px minmax(0, 1fr) 62px;
+  grid-template-rows: 22px minmax(0, 1fr) 36px minmax(0, 1.35fr);
   grid-template-areas:
     "header header header"
     "left battle right"
@@ -177,19 +179,19 @@ button:disabled {
   align-items: baseline;
   justify-content: space-between;
   gap: 8px;
-  padding: 5px 8px;
+  padding: 3px 7px;
   border-bottom: 1px solid #ded2c0;
   background: #f2e7d5;
 }
 
 .duel-area-header h2 {
   margin: 0;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .duel-area-header span {
   color: #61594d;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
 }
 
@@ -205,8 +207,8 @@ button:disabled {
   display: grid;
   grid-template-columns: 1fr;
   grid-auto-rows: minmax(0, 1fr);
-  gap: 4px;
-  padding: 5px;
+  gap: 3px;
+  padding: 4px;
   min-height: 0;
 }
 
@@ -224,7 +226,7 @@ button:disabled {
 .pile,
 .shield-zone {
   min-height: 0;
-  padding: 4px;
+  padding: 3px;
   border: 1px solid #d6c8b6;
   border-radius: 8px;
   background: #fffdf8;
@@ -243,7 +245,7 @@ button:disabled {
 }
 
 .pile span {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 900;
 }
 
@@ -251,13 +253,13 @@ button:disabled {
 .mana-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 3px;
-  margin-top: 3px;
+  gap: 2px;
+  margin-top: 2px;
 }
 
 .shield {
-  min-width: 25px;
-  padding: 3px 4px;
+  min-width: 21px;
+  padding: 2px 3px;
   border-radius: 5px;
   background: #323027;
   color: #fff7e8;
@@ -272,9 +274,9 @@ button:disabled {
 }
 
 .mana-chip {
-  max-width: 88px;
-  min-width: 46px;
-  padding: 2px 5px;
+  max-width: 74px;
+  min-width: 36px;
+  padding: 1px 4px;
   border: 1px solid #bfb29e;
   border-radius: 5px;
   background: #f5ebd8;
@@ -289,9 +291,9 @@ button:disabled {
 .mana-chip b {
   display: inline-grid;
   place-items: center;
-  width: 16px;
-  height: 16px;
-  margin-right: 3px;
+  width: 14px;
+  height: 14px;
+  margin-right: 2px;
   border-radius: 50%;
   background: rgba(23, 24, 18, 0.78);
   color: #fff;
@@ -326,7 +328,7 @@ button:disabled {
 .battle-lane,
 .hand-lane {
   min-height: 0;
-  padding: 5px 7px;
+  padding: 4px 6px;
 }
 
 .battle-lane {
@@ -344,7 +346,7 @@ button:disabled {
   grid-area: mana;
   min-width: 0;
   min-height: 0;
-  padding: 4px 7px;
+  padding: 3px 6px;
   border-top: 1px dashed #d2b58e;
   border-bottom: 1px dashed #d2b58e;
   background: #fff9ed;
@@ -366,9 +368,11 @@ button:disabled {
 
 .mana-zone .mana-row {
   display: inline-flex;
+  flex-wrap: nowrap;
   width: calc(100% - 84px);
-  max-height: 32px;
-  overflow: hidden;
+  max-height: 26px;
+  overflow-x: auto;
+  overflow-y: hidden;
   vertical-align: top;
 }
 
@@ -429,16 +433,35 @@ button:disabled {
 
 .card-row {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(98px, 1fr));
-  gap: 5px;
+  grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
+  gap: 4px;
+}
+
+.hand-row {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 2px;
+}
+
+.hand-row .card,
+.hand-row .card-back {
+  flex: 0 0 98px;
+}
+
+.battle-row {
+  align-content: start;
+  max-height: 100%;
+  overflow: hidden;
 }
 
 .card {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  min-height: 128px;
-  padding: 4px;
+  gap: 2px;
+  min-height: 108px;
+  padding: 3px;
   border: 2px solid #5d564b;
   border-radius: 8px;
   background: #fffaf0;
@@ -522,7 +545,7 @@ button:disabled {
 
 .card-visual {
   position: relative;
-  min-height: 38px;
+  min-height: 28px;
   border-radius: 6px;
   border: 1px solid rgba(0, 0, 0, 0.22);
   overflow: hidden;
@@ -557,25 +580,25 @@ button:disabled {
 
 .cost-orb {
   position: absolute;
-  top: 6px;
-  left: 6px;
-  width: 22px;
-  height: 22px;
+  top: 4px;
+  left: 4px;
+  width: 19px;
+  height: 19px;
   display: grid;
   place-items: center;
   border: 2px solid rgba(255, 255, 255, 0.84);
   border-radius: 50%;
   background: rgba(23, 24, 18, 0.82);
   color: #fff;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 900;
 }
 
 .card-type {
   position: absolute;
-  right: 6px;
-  bottom: 6px;
-  padding: 2px 5px;
+  right: 4px;
+  bottom: 4px;
+  padding: 1px 4px;
   border-radius: 999px;
   background: rgba(255, 250, 240, 0.9);
   color: #29231d;
@@ -590,8 +613,8 @@ button:disabled {
 .power-box,
 .spell-mark {
   position: absolute;
-  right: 6px;
-  top: 6px;
+  right: 4px;
+  top: 4px;
   min-width: 34px;
   padding: 2px 4px;
   border-radius: 6px;
@@ -603,7 +626,7 @@ button:disabled {
 }
 
 .card-back {
-  min-height: 42px;
+  min-height: 86px;
   display: grid;
   place-items: center;
   border: 1px dashed #a79f92;
@@ -615,14 +638,14 @@ button:disabled {
 }
 
 .card-name {
-  min-height: 18px;
-  font-size: 11px;
+  min-height: 15px;
+  font-size: 10px;
   font-weight: 800;
   line-height: 1.2;
 }
 
 .card-status {
-  min-height: 14px;
+  min-height: 12px;
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
@@ -669,9 +692,11 @@ button:disabled {
 .card-text {
   flex: 1;
   color: #3b352d;
-  font-size: 10px;
-  line-height: 1.25;
-  padding: 3px;
+  max-height: 34px;
+  overflow: hidden;
+  font-size: 9px;
+  line-height: 1.18;
+  padding: 2px;
   border: 1px solid #ded2c0;
   border-radius: 6px;
   background: #fffdf8;
@@ -680,13 +705,13 @@ button:disabled {
 .card-actions {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
-  gap: 3px;
+  gap: 2px;
 }
 
 .card-actions button {
-  min-height: 23px;
-  padding: 0 4px;
-  font-size: 10px;
+  min-height: 20px;
+  padding: 0 3px;
+  font-size: 9px;
 }
 
 .compact-zone {
@@ -714,7 +739,7 @@ button:disabled {
 }
 
 .empty-zone {
-  min-height: 40px;
+  min-height: 30px;
   display: grid;
   place-items: center;
   border: 1px dashed #cabda9;
