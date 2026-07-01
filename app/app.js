@@ -644,7 +644,7 @@ async function chooseBlocker(attackerIndex, attacker) {
   const blockers = defenderOwner.battle.filter((card) => card.text.includes("ブロッカー") && !card.tapped);
   if (blockers.length === 0) return null;
   if (defenderIndex === HUMAN) {
-    return chooseCard(`${attacker.name} をブロックする？`, blockers, true);
+    return chooseBlockerCard(attacker, blockers);
   }
   return blockers[0];
 }
@@ -1073,6 +1073,25 @@ function displayCardText(card) {
     .trim() || "効果なし";
 }
 
+function renderPreviewCard(card, extraClass = "") {
+  return `
+    <article class="choice-card ${extraClass} ${card.tapped ? "tapped" : ""} ${card.asleep ? "asleep" : ""}">
+      <div class="card-visual ${CIV_CLASS[card.civilization] || ""}">
+        <div class="cost-orb">${card.cost}</div>
+        <div class="card-type">${escapeHtml(card.civilization)} / ${escapeHtml(card.type)}</div>
+        ${card.type === "クリーチャー" ? `<div class="power-box">${totalPower(card)}</div>` : `<div class="spell-mark">SPELL</div>`}
+      </div>
+      <div class="card-name">${escapeHtml(card.name)}</div>
+      <div class="card-status">
+        ${card.text.includes("ブロッカー") ? `<span class="blocker-status" title="ブロッカー">B</span>` : ""}
+        ${card.asleep ? `<span>召喚酔い</span>` : ""}
+        ${card.tapped ? `<span>タップ済み</span>` : ""}
+      </div>
+      <div class="card-text">${escapeHtml(displayCardText(card))}</div>
+    </article>
+  `;
+}
+
 function canEnterAttackWith(card) {
   return (phase() === "メイン" || phase() === "アタック") && !card.tapped && !card.asleep;
 }
@@ -1123,6 +1142,50 @@ function chooseCard(title, cards, optional = false) {
       cleanup();
       els.dialog.close();
       resolve(cards.find((card) => card.uid === button.dataset.choice) || null);
+    };
+    const handleClose = () => {
+      cleanup();
+      resolve(null);
+    };
+    const cleanup = () => {
+      els.choiceList.removeEventListener("click", handleChoice);
+      els.dialog.removeEventListener("close", handleClose);
+    };
+    els.choiceList.addEventListener("click", handleChoice);
+    els.dialog.addEventListener("close", handleClose, { once: true });
+    els.dialog.showModal();
+  });
+}
+
+function chooseBlockerCard(attacker, blockers) {
+  return new Promise((resolve) => {
+    els.choiceTitle.textContent = "ブロックする？";
+    els.choiceList.innerHTML = `
+      <div class="block-choice">
+        <section class="block-choice-section">
+          <h3>攻撃中</h3>
+          ${renderPreviewCard(attacker, "attacker-preview")}
+        </section>
+        <section class="block-choice-section">
+          <h3>ブロック候補</h3>
+          <div class="blocker-choice-grid">
+            ${blockers.map((card) => `
+              <button class="blocker-choice-card" type="button" data-choice="${card.uid}">
+                ${renderPreviewCard(card)}
+              </button>
+            `).join("")}
+          </div>
+        </section>
+        <button class="no-block-choice" type="button" data-choice="">ブロックしない</button>
+      </div>
+    `;
+
+    const handleChoice = (event) => {
+      const button = event.target.closest("[data-choice]");
+      if (!button) return;
+      cleanup();
+      els.dialog.close();
+      resolve(blockers.find((card) => card.uid === button.dataset.choice) || null);
     };
     const handleClose = () => {
       cleanup();

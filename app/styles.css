@@ -638,7 +638,12 @@ button.mana-chip {
 }
 
 .card.tapped {
-  transform: rotate(2deg);
+  transform: rotate(90deg) scale(0.72);
+  background: #e8dfcf;
+}
+
+.choice-card.tapped {
+  transform: rotate(90deg) scale(0.72);
   background: #e8dfcf;
 }
 
@@ -851,7 +856,7 @@ button.mana-chip {
 
 .mini-card.tapped {
   background: #ded6c8;
-  transform: rotate(4deg);
+  transform: rotate(90deg) scale(0.72);
 }
 
 .empty-zone {
@@ -865,7 +870,7 @@ button.mana-chip {
 }
 
 dialog {
-  width: min(620px, calc(100vw - 24px));
+  width: min(720px, calc(100vw - 24px));
   border: 1px solid #bdb4a4;
   border-radius: 8px;
   padding: 16px;
@@ -905,6 +910,70 @@ dialog h2 {
   min-height: 44px;
   padding: 8px 10px;
   text-align: left;
+}
+
+.block-choice {
+  display: grid;
+  gap: 12px;
+}
+
+.block-choice-section {
+  display: grid;
+  gap: 6px;
+}
+
+.block-choice-section h3 {
+  margin: 0;
+  color: #4e473d;
+  font-size: 12px;
+}
+
+.blocker-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(116px, 1fr));
+  gap: 8px;
+}
+
+.choice-card {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-height: 128px;
+  padding: 4px;
+  border: 2px solid #5d564b;
+  border-radius: 8px;
+  background: #fffaf0;
+  box-shadow: 0 2px 0 rgba(36, 32, 26, 0.18);
+}
+
+.choice-card .card-visual {
+  min-height: 34px;
+}
+
+.choice-card.attacker-preview {
+  width: min(180px, 100%);
+  border-color: #b26a22;
+  background: #fff4e4;
+}
+
+.blocker-choice-card {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: inherit;
+}
+
+.blocker-choice-card:hover .choice-card {
+  border-color: #1d8dff;
+  box-shadow:
+    0 0 0 2px rgba(29, 141, 255, 0.18),
+    0 2px 0 rgba(36, 32, 26, 0.18);
+}
+
+.no-block-choice {
+  justify-self: end;
+  min-width: 132px;
 }
 
 menu {
