@@ -937,8 +937,14 @@ dialog h2 {
     0 2px 0 rgba(36, 32, 26, 0.18);
 }
 
-.no-card-choice {
-  justify-self: end;
+.card-choice-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.no-card-choice,
+.cancel-card-use-choice {
   min-width: 112px;
 }
 

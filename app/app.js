@@ -9,6 +9,8 @@ const CIV_CLASS = {
   光: "light",
 };
 
+const CARD_USE_CANCELLED = new Error("CARD_USE_CANCELLED");
+
 let cardDefs = [];
 let deckDefs = [];
 let state = null;
@@ -411,30 +413,41 @@ async function cpuPlayOneCard() {
 }
 
 async function playCard(playerIndex, uidValue) {
+  const beforeUseState = playerIndex === HUMAN ? structuredClone(state) : null;
   const player = state.players[playerIndex];
   if (phase() !== "メイン") return false;
   const card = player.hand.find((candidate) => candidate.uid === uidValue);
   if (!card || !canPayCost(player, card)) return false;
-  const paid = await payCost(playerIndex, card);
-  if (!paid) return false;
-  removeByUid(player.hand, uidValue);
+  try {
+    const paid = await payCost(playerIndex, card);
+    if (!paid) return false;
+    removeByUid(player.hand, uidValue);
 
-  if (card.type === "クリーチャー") {
-    card.tapped = false;
-    card.asleep = !card.text.includes("スピードアタッカー");
-    player.battle.push(card);
-    setEvent(`${player.label} は ${card.name} を召喚した。`, {
-      uids: [card.uid],
-      zones: [playerIndex === HUMAN ? "human-battle" : "cpu-battle"],
-    });
-    await resolveEnterEffect(playerIndex, card);
-  } else {
-    setEvent(`${player.label} は ${card.name} を詠唱した。`, { uids: [card.uid] });
-    await resolveSpell(playerIndex, card);
-    card.tapped = false;
-    card.asleep = false;
-    card.tempPower = 0;
-    player.grave.push(card);
+    if (card.type === "クリーチャー") {
+      card.tapped = false;
+      card.asleep = !card.text.includes("スピードアタッカー");
+      player.battle.push(card);
+      setEvent(`${player.label} は ${card.name} を召喚した。`, {
+        uids: [card.uid],
+        zones: [playerIndex === HUMAN ? "human-battle" : "cpu-battle"],
+      });
+      await resolveEnterEffect(playerIndex, card);
+    } else {
+      setEvent(`${player.label} は ${card.name} を詠唱した。`, { uids: [card.uid] });
+      await resolveSpell(playerIndex, card);
+      card.tapped = false;
+      card.asleep = false;
+      card.tempPower = 0;
+      player.grave.push(card);
+    }
+  } catch (error) {
+    if (error === CARD_USE_CANCELLED && beforeUseState) {
+      state = beforeUseState;
+      setEvent("カード使用をキャンセルしました。", { zones: ["human-hand"] });
+      render();
+      return false;
+    }
+    throw error;
   }
   render();
   return true;
@@ -1121,7 +1134,7 @@ function zoneFlash(zoneName) {
 }
 
 function chooseCard(title, cards, optional = false) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     if (cards.length === 0) {
       if (!optional) setEvent(`${title}: 対象がありません。`);
       resolve(null);
@@ -1138,10 +1151,19 @@ function chooseCard(title, cards, optional = false) {
           </button>
         `).join("")}
       </div>
-      ${optional ? `<button class="no-card-choice" type="button" data-choice="">選ばない</button>` : ""}
+      <div class="card-choice-actions">
+        ${optional ? `<button class="no-card-choice" type="button" data-choice="">効果を使わない</button>` : ""}
+        <button class="cancel-card-use-choice" type="button" data-cancel-card-use="true">カード使用をキャンセル</button>
+      </div>
     `;
 
     const handleChoice = (event) => {
+      if (event.target.closest("[data-cancel-card-use]")) {
+        cleanup();
+        els.dialog.close();
+        reject(CARD_USE_CANCELLED);
+        return;
+      }
       const button = event.target.closest("[data-choice]");
       if (!button) return;
       cleanup();
@@ -1150,7 +1172,7 @@ function chooseCard(title, cards, optional = false) {
     };
     const handleClose = () => {
       cleanup();
-      resolve(null);
+      reject(CARD_USE_CANCELLED);
     };
     const cleanup = () => {
       els.dialog.classList.remove("card-choice-dialog");
