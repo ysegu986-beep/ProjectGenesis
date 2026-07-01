@@ -7,6 +7,7 @@ const CIV_CLASS = {
   自然: "nature",
   水: "water",
   光: "light",
+  闇: "dark",
 };
 
 const CARD_USE_CANCELLED = new Error("CARD_USE_CANCELLED");
@@ -116,6 +117,7 @@ function setStarterOpeningHand(player, deckIndex) {
   const openingHands = [
     ["F-001", "F-001", "F-002", "N-001", "F-006"],
     ["L-002", "L-005", "W-002", "LS-001", "W-006"],
+    ["D-001", "D-002", "D-003", "DS-001", "D-004"],
   ];
   setOpeningHand(player, openingHands[deckIndex] || []);
 }
@@ -496,10 +498,22 @@ function cpuPlayScore(card, cpu, opponent) {
   if (["F-003", "F-007", "F-010"].includes(card.id)) {
     score += opponent.battle.some((item) => totalPower(item) <= fireCreatureDestroyLimit(card)) ? 22 : -8;
   }
-  if (["FS-001", "FS-004"].includes(card.id)) {
+  if (["FS-001", "FS-004", "FS-005"].includes(card.id)) {
     score += opponent.battle.some((item) => totalPower(item) <= fireSpellDestroyLimit(card)) ? 24 : -80;
   }
-  if (["W-003", "W-009"].includes(card.id)) {
+  if (["D-003", "D-009"].includes(card.id)) {
+    score += opponent.battle.some((item) => totalPower(item) <= darkCreatureDestroyLimit(card)) ? 22 : -8;
+  }
+  if (["DS-001", "DS-004"].includes(card.id)) {
+    score += opponent.battle.some((item) => totalPower(item) <= darkSpellDestroyLimit(card)) ? 24 : -80;
+  }
+  if (["D-004", "DS-002"].includes(card.id)) {
+    score += opponent.hand.length > 0 ? 16 : -60;
+  }
+  if (["D-011", "DS-003"].includes(card.id)) {
+    score += cpu.grave.some((graveCard) => graveCard.type === "クリーチャー" && graveCard.cost <= reviveCostLimit(card)) ? 18 : -70;
+  }
+  if (["W-003", "W-009", "W-010"].includes(card.id)) {
     score += opponent.battle.some((item) => item.cost <= bounceCreatureCostLimit(card)) ? 18 : -4;
   }
   if (card.id === "WS-002") {
@@ -717,9 +731,21 @@ function fireCreatureDestroyLimit(card) {
   return card.id === "F-010" ? 3000 : 2000;
 }
 
+function darkCreatureDestroyLimit(card) {
+  return card.id === "D-009" ? 3000 : 2000;
+}
+
+function darkSpellDestroyLimit(card) {
+  return card.id === "DS-004" ? 5000 : 3000;
+}
+
 function bounceCreatureCostLimit(card) {
   if (card.id === "W-010") return 4;
   return card.id === "W-009" ? 3 : 2;
+}
+
+function reviveCostLimit(card) {
+  return card.id === "DS-003" ? 3 : 2;
 }
 
 async function playCard(playerIndex, uidValue) {
@@ -774,6 +800,19 @@ async function resolveEnterEffect(playerIndex, card) {
       ? await chooseCard("破壊する相手クリーチャー", candidates, true)
       : cpuBestThreat(candidates);
     if (target) destroyCreature(1 - playerIndex, target.uid);
+  }
+  if (["D-003", "D-009"].includes(card.id)) {
+    const candidates = opponent.battle.filter((item) => totalPower(item) <= darkCreatureDestroyLimit(card));
+    const target = isHuman
+      ? await chooseCard("破壊する相手クリーチャー", candidates, true)
+      : cpuBestThreat(candidates);
+    if (target) destroyCreature(1 - playerIndex, target.uid);
+  }
+  if (card.id === "D-004") {
+    await discardFromOpponent(playerIndex, false);
+  }
+  if (card.id === "D-011") {
+    await reviveFromGrave(playerIndex, card, true);
   }
   if (card.id === "F-004") {
     const target = isHuman
@@ -868,6 +907,19 @@ async function resolveSpell(playerIndex, card) {
       ? await chooseCard("破壊する相手クリーチャー", candidates, false)
       : cpuBestThreat(candidates);
     if (target) destroyCreature(1 - playerIndex, target.uid);
+  }
+  if (["DS-001", "DS-004"].includes(card.id)) {
+    const candidates = opponent.battle.filter((item) => totalPower(item) <= darkSpellDestroyLimit(card));
+    const target = isHuman
+      ? await chooseCard("破壊する相手クリーチャー", candidates, false)
+      : cpuBestThreat(candidates);
+    if (target) destroyCreature(1 - playerIndex, target.uid);
+  }
+  if (card.id === "DS-002") {
+    await discardFromOpponent(playerIndex, false);
+  }
+  if (card.id === "DS-003") {
+    await reviveFromGrave(playerIndex, card, false);
   }
   if (card.id === "FS-002") {
     const target = isHuman
@@ -1016,6 +1068,47 @@ async function resolveSpell(playerIndex, card) {
     }
     setEvent(`${player.label} のクリーチャーすべてのパワーをこのターン中+1000。`, {
       uids: player.battle.map((creature) => creature.uid),
+      zones: [isHuman ? "human-battle" : "cpu-battle"],
+    });
+  }
+}
+
+async function discardFromOpponent(playerIndex, optional) {
+  const opponentIndex = 1 - playerIndex;
+  const opponent = state.players[opponentIndex];
+  if (opponent.hand.length === 0) return;
+  const target = opponentIndex === HUMAN
+    ? chooseForcedDiscard(opponent.hand)
+    : chooseCpuDiscard(opponent, state.players[playerIndex]);
+  if (target) {
+    removeByUid(opponent.hand, target.uid);
+    opponent.grave.push(target);
+    setEvent(`${opponent.label} は ${target.name} を捨てた。`, {
+      uids: [target.uid],
+      zones: [opponentIndex === HUMAN ? "human-grave" : "cpu-grave"],
+    });
+  }
+}
+
+function chooseForcedDiscard(cards) {
+  return [...cards]
+    .sort((a, b) => b.cost - a.cost || cpuThreatScore(b) - cpuThreatScore(a))[0] || null;
+}
+
+async function reviveFromGrave(playerIndex, card, optional) {
+  const player = state.players[playerIndex];
+  const isHuman = playerIndex === HUMAN;
+  const candidates = player.grave.filter((item) => item.type === "クリーチャー" && item.cost <= reviveCostLimit(card));
+  const target = isHuman
+    ? await chooseCard("墓地から出すクリーチャー", candidates, optional)
+    : cpuBestThreat(candidates);
+  if (target) {
+    removeByUid(player.grave, target.uid);
+    resetCard(target);
+    target.asleep = true;
+    player.battle.push(target);
+    setEvent(`${player.label} は ${target.name} を墓地からバトルゾーンに出した。`, {
+      uids: [target.uid],
       zones: [isHuman ? "human-battle" : "cpu-battle"],
     });
   }

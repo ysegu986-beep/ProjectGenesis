@@ -71,6 +71,28 @@
         { "id": "LS-004", "count": 1 },
         { "id": "LS-005", "count": 1 }
       ]
+    },
+    {
+      "id": "starter-dark-midrange-v0",
+      "name": "闇ミッドレンジ",
+      "goal": "除去と手札破壊で相手の選択肢を削り、墓地利用で盤面を作り直す。",
+      "cards": [
+        { "id": "D-001", "count": 4 },
+        { "id": "D-002", "count": 3 },
+        { "id": "D-003", "count": 3 },
+        { "id": "D-004", "count": 2 },
+        { "id": "D-005", "count": 2 },
+        { "id": "D-006", "count": 4 },
+        { "id": "D-007", "count": 2 },
+        { "id": "D-008", "count": 3 },
+        { "id": "D-009", "count": 2 },
+        { "id": "D-010", "count": 1 },
+        { "id": "D-011", "count": 2 },
+        { "id": "DS-001", "count": 4 },
+        { "id": "DS-002", "count": 3 },
+        { "id": "DS-003", "count": 3 },
+        { "id": "DS-004", "count": 2 }
+      ]
     }
   ]
 }

@@ -423,6 +423,11 @@ button.mana-chip {
   background: #fff1b9;
 }
 
+.mana-chip.dark {
+  border-color: #4b334e;
+  background: #e3d3e6;
+}
+
 .mana-chip.tapped {
   opacity: 0.62;
   transform: rotate(5deg);
@@ -686,6 +691,13 @@ button.mana-chip {
     linear-gradient(150deg, #d6b94d, #fff1a3);
 }
 
+.card-visual.dark {
+  color: #f7edf7;
+  background:
+    linear-gradient(135deg, rgba(255, 235, 245, 0.24), rgba(255, 235, 245, 0)),
+    linear-gradient(150deg, #39253f, #8d3f58);
+}
+
 .cost-orb {
   position: absolute;
   top: 4px;
@@ -808,6 +820,11 @@ button.mana-chip {
 
 .badge.light {
   background: #eee6b4;
+}
+
+.badge.dark {
+  color: #f8edf6;
+  background: #6f4a75;
 }
 
 .card-text {
