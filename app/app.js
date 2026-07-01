@@ -57,6 +57,10 @@ async function init() {
     render();
   });
   els.battlefield.addEventListener("click", handleBattlefieldClick);
+  els.battlefield.addEventListener("dragstart", handleAttackDragStart);
+  els.battlefield.addEventListener("dragover", handleAttackDragOver);
+  els.battlefield.addEventListener("drop", handleAttackDrop);
+  els.battlefield.addEventListener("dragend", handleAttackDragEnd);
 
   startGame();
 }
@@ -70,6 +74,8 @@ function startGame() {
     manaPlaced: false,
     winner: null,
     busy: false,
+    draggingAttack: null,
+    suppressAttackClick: false,
     eventMessage: "",
     flashUids: [],
     flashZones: [],
@@ -265,6 +271,11 @@ function canHumanAct() {
 function handleBattlefieldClick(event) {
   const target = event.target.closest("[data-action]");
   if (!target || !canHumanAct()) return;
+  if (state.suppressAttackClick) {
+    state.suppressAttackClick = false;
+    return;
+  }
+  if (state.draggingAttack) return;
 
   const action = target.dataset.action;
   const uidValue = target.dataset.uid;
@@ -279,6 +290,40 @@ function handleBattlefieldClick(event) {
     performAttack(HUMAN, uidValue, "player");
     render();
   }
+}
+
+function handleAttackDragStart(event) {
+  const card = event.target.closest("[data-drag-attack]");
+  if (!card || !canHumanAct()) return;
+  state.draggingAttack = card.dataset.uid;
+  event.dataTransfer.effectAllowed = "move";
+  event.dataTransfer.setData("text/plain", card.dataset.uid);
+}
+
+function handleAttackDragOver(event) {
+  if (!state?.draggingAttack) return;
+  const target = event.target.closest("[data-drop-target]");
+  if (!target) return;
+  event.preventDefault();
+  event.dataTransfer.dropEffect = "move";
+}
+
+function handleAttackDrop(event) {
+  if (!state?.draggingAttack || !canHumanAct()) return;
+  const target = event.target.closest("[data-drop-target]");
+  if (!target) return;
+  event.preventDefault();
+
+  const attackerUid = event.dataTransfer.getData("text/plain") || state.draggingAttack;
+  const targetUid = target.dataset.dropTarget === "creature" ? target.dataset.uid : "player";
+  performAttack(HUMAN, attackerUid, targetUid);
+  state.draggingAttack = null;
+  state.suppressAttackClick = true;
+  render();
+}
+
+function handleAttackDragEnd() {
+  state.draggingAttack = null;
 }
 
 function putMana(playerIndex, uidValue) {
@@ -683,7 +728,7 @@ function renderLog() {
 
 function nextPhaseLabel() {
   if (phase() === "マナ") return "メインへ";
-  if (phase() === "メイン") return "アタックへ";
+  if (phase() === "メイン") return "攻撃開始";
   return "ターン終了";
 }
 
@@ -719,7 +764,7 @@ function renderGameTable() {
 
 function renderPlayerArea(player, index, opponent) {
   return `
-    <section class="duel-area ${opponent ? "opponent" : "human"} ${index === state.active ? "active" : ""} ${zoneFlash(index === HUMAN ? "human-area" : "cpu-area")}">
+    <section class="duel-area ${opponent ? "opponent drop-player" : "human"} ${index === state.active ? "active" : ""} ${zoneFlash(index === HUMAN ? "human-area" : "cpu-area")}" ${opponent ? `data-drop-target="player"` : ""}>
       <div class="duel-area-header">
         <h2>${escapeHtml(player.label)}</h2>
         <span>${escapeHtml(player.deckName)}</span>
@@ -782,9 +827,10 @@ function renderCard(card, playerIndex, zone) {
   const playable = humanTurn && zone === "hand" && phase() === "メイン" && canPayCost(state.players[HUMAN], card);
   const canMana = humanTurn && zone === "hand" && phase() === "マナ" && !state.manaPlaced;
   const canAttack = humanTurn && zone === "battle" && phase() === "アタック" && !card.tapped && !card.asleep;
+  const canDropAttack = playerIndex === CPU && zone === "battle" && card.tapped;
   const reason = cardReason(card, playerIndex, zone);
   return `
-    <article class="card ${canAttack ? "attackable" : ""} ${card.tapped ? "tapped" : ""} ${card.asleep ? "asleep" : ""} ${playable || canMana || canAttack ? "ready" : ""} ${cardFlash(card)}" ${canAttack ? `data-action="select-attacker" data-uid="${card.uid}"` : ""}>
+    <article class="card ${canAttack ? "attackable" : ""} ${canDropAttack ? "drop-creature" : ""} ${card.tapped ? "tapped" : ""} ${card.asleep ? "asleep" : ""} ${playable || canMana || canAttack ? "ready" : ""} ${cardFlash(card)}" ${canAttack ? `data-action="select-attacker" data-drag-attack="true" draggable="true" data-uid="${card.uid}"` : ""} ${canDropAttack ? `data-drop-target="creature" data-uid="${card.uid}"` : ""}>
       <div class="card-visual ${CIV_CLASS[card.civilization] || ""}">
         <div class="cost-orb">${card.cost}</div>
         <div class="card-type">${escapeHtml(card.civilization)} / ${escapeHtml(card.type)}</div>

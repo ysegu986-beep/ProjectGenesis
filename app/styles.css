@@ -389,11 +389,24 @@ button:disabled {
 }
 
 .card.attackable {
-  cursor: pointer;
+  cursor: grab;
 }
 
 .card.attackable:hover {
   border-color: #b26a22;
+}
+
+.card.attackable:active {
+  cursor: grabbing;
+}
+
+.drop-player {
+  outline-offset: -3px;
+}
+
+.drop-creature {
+  outline: 2px dashed rgba(178, 106, 34, 0.38);
+  outline-offset: -4px;
 }
 
 .card.selected {
