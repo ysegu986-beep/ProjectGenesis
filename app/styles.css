@@ -929,17 +929,21 @@ dialog h2 {
 }
 
 .blocker-choice-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(116px, 1fr));
+  display: flex;
+  flex-wrap: nowrap;
   gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 4px;
 }
 
 .choice-card {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  min-height: 128px;
-  padding: 4px;
+  gap: 2px;
+  min-height: 108px;
+  width: 98px;
+  padding: 3px;
   border: 2px solid #5d564b;
   border-radius: 8px;
   background: #fffaf0;
@@ -947,16 +951,16 @@ dialog h2 {
 }
 
 .choice-card .card-visual {
-  min-height: 34px;
+  min-height: 28px;
 }
 
 .choice-card.attacker-preview {
-  width: min(180px, 100%);
   border-color: #b26a22;
   background: #fff4e4;
 }
 
 .blocker-choice-card {
+  flex: 0 0 98px;
   min-height: 0;
   padding: 0;
   border: 0;
