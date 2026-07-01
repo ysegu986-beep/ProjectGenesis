@@ -22,6 +22,7 @@ const els = {
   battlefield: document.querySelector("#battlefield"),
   log: document.querySelector("#game-log"),
   newGame: document.querySelector("#new-game"),
+  skipMana: document.querySelector("#skip-mana"),
   nextPhase: document.querySelector("#next-phase"),
   endTurn: document.querySelector("#end-turn"),
   clearLog: document.querySelector("#clear-log"),
@@ -41,6 +42,7 @@ async function init() {
   deckDefs = (await decksRes.json()).decks;
 
   els.newGame.addEventListener("click", startGame);
+  els.skipMana.addEventListener("click", skipMana);
   els.nextPhase.addEventListener("click", nextPhase);
   els.endTurn.addEventListener("click", endHumanTurn);
   els.clearLog.addEventListener("click", () => {
@@ -169,7 +171,7 @@ function phase() {
 function nextPhase() {
   if (!canHumanAct()) return;
   if (phase() === "マナ" && !state.manaPlaced && state.players[HUMAN].hand.length > 0) {
-    setEvent("まず手札を1枚マナへ置いてください。", { zones: ["human-hand"] });
+    setEvent("マナを置くか、上の「マナパス」でメインへ進めます。", { zones: ["human-hand"] });
     render();
     return;
   }
@@ -184,6 +186,14 @@ function nextPhase() {
     endHumanTurn();
     return;
   }
+  render();
+}
+
+function skipMana() {
+  if (!canHumanAct() || phase() !== "マナ" || state.manaPlaced) return;
+  state.manaPlaced = true;
+  state.phaseIndex = 1;
+  setEvent("マナチャージをパスしてメインフェーズへ。", { zones: ["human-hand"] });
   render();
 }
 
@@ -654,6 +664,7 @@ function render() {
   els.phaseGuide.textContent = guideText();
   els.nextPhase.textContent = nextPhaseLabel();
   els.nextPhase.disabled = !canHumanAct() || (phase() === "マナ" && !state.manaPlaced && state.players[HUMAN].hand.length > 0);
+  els.skipMana.disabled = !canHumanAct() || phase() !== "マナ" || state.manaPlaced;
   els.endTurn.disabled = !canHumanAct();
 
   els.scoreboard.innerHTML = state.players.map(renderSummary).join("");
@@ -667,7 +678,7 @@ function guideText() {
   if (phase() === "マナ") {
     return state.manaPlaced
       ? "マナは置きました。メインフェーズでカードを使えます。"
-      : "手札から1枚選んで「マナへ」を押してください。";
+      : "手札から1枚選んで「マナへ」。置きたくないなら「マナパス」。";
   }
   if (phase() === "メイン") {
     return humanPlayableCards().length > 0

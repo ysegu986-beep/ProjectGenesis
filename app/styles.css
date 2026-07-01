@@ -179,7 +179,13 @@ button:disabled {
 
 .game-table {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 12px;
+}
+
+.center-stack {
+  grid-column: 1 / -1;
+  order: -1;
 }
 
 .duel-area {
@@ -203,7 +209,7 @@ button:disabled {
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  padding: 10px 12px;
+  padding: 8px 10px;
   border-bottom: 1px solid #ded2c0;
   background: #f2e7d5;
 }
@@ -221,9 +227,9 @@ button:disabled {
 
 .zone-strip {
   display: grid;
-  grid-template-columns: 92px minmax(160px, 1fr) minmax(180px, 1.2fr) 92px;
-  gap: 10px;
-  padding: 10px 12px;
+  grid-template-columns: 64px minmax(120px, 1fr) minmax(140px, 1.2fr) 64px;
+  gap: 6px;
+  padding: 8px 10px;
   border-bottom: 1px solid #eadfce;
 }
 
@@ -231,7 +237,7 @@ button:disabled {
 .shield-zone,
 .mana-zone {
   min-height: 64px;
-  padding: 8px;
+  padding: 6px;
   border: 1px solid #d6c8b6;
   border-radius: 8px;
   background: #fffdf8;
@@ -301,11 +307,11 @@ button:disabled {
 
 .battle-lane,
 .hand-lane {
-  padding: 10px 12px;
+  padding: 8px 10px;
 }
 
 .battle-lane {
-  min-height: 238px;
+  min-height: 180px;
   border-bottom: 1px solid #eadfce;
 }
 
@@ -423,16 +429,16 @@ button:disabled {
 
 .card-row {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: 8px;
 }
 
 .card {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  min-height: 226px;
-  padding: 8px;
+  gap: 5px;
+  min-height: 170px;
+  padding: 6px;
   border: 2px solid #5d564b;
   border-radius: 8px;
   background: #fffaf0;
@@ -495,7 +501,7 @@ button:disabled {
 
 .card-visual {
   position: relative;
-  min-height: 82px;
+  min-height: 52px;
   border-radius: 6px;
   border: 1px solid rgba(0, 0, 0, 0.22);
   overflow: hidden;
@@ -530,49 +536,49 @@ button:disabled {
 
 .cost-orb {
   position: absolute;
-  top: 8px;
-  left: 8px;
-  width: 34px;
-  height: 34px;
+  top: 6px;
+  left: 6px;
+  width: 28px;
+  height: 28px;
   display: grid;
   place-items: center;
   border: 2px solid rgba(255, 255, 255, 0.84);
   border-radius: 50%;
   background: rgba(23, 24, 18, 0.82);
   color: #fff;
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 900;
 }
 
 .card-type {
   position: absolute;
-  right: 8px;
-  bottom: 8px;
+  right: 6px;
+  bottom: 6px;
   padding: 3px 7px;
   border-radius: 999px;
   background: rgba(255, 250, 240, 0.9);
   color: #29231d;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
 }
 
 .power-box,
 .spell-mark {
   position: absolute;
-  right: 8px;
-  top: 8px;
-  min-width: 52px;
-  padding: 5px 7px;
+  right: 6px;
+  top: 6px;
+  min-width: 44px;
+  padding: 4px 6px;
   border-radius: 6px;
   background: rgba(255, 250, 240, 0.94);
   color: #211d18;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 900;
   text-align: center;
 }
 
 .card-back {
-  min-height: 104px;
+  min-height: 58px;
   display: grid;
   place-items: center;
   border: 1px dashed #a79f92;
@@ -584,13 +590,14 @@ button:disabled {
 }
 
 .card-name {
-  min-height: 38px;
+  min-height: 30px;
+  font-size: 13px;
   font-weight: 800;
   line-height: 1.2;
 }
 
 .card-status {
-  min-height: 22px;
+  min-height: 18px;
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
@@ -601,7 +608,7 @@ button:disabled {
   border-radius: 999px;
   background: #2f6b72;
   color: #fff;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
 }
 
@@ -637,9 +644,9 @@ button:disabled {
 .card-text {
   flex: 1;
   color: #3b352d;
-  font-size: 13px;
-  line-height: 1.45;
-  padding: 7px;
+  font-size: 11px;
+  line-height: 1.35;
+  padding: 5px;
   border: 1px solid #ded2c0;
   border-radius: 6px;
   background: #fffdf8;
@@ -647,14 +654,14 @@ button:disabled {
 
 .card-actions {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(54px, 1fr));
   gap: 5px;
 }
 
 .card-actions button {
-  min-height: 34px;
-  padding: 0 6px;
-  font-size: 12px;
+  min-height: 28px;
+  padding: 0 4px;
+  font-size: 11px;
 }
 
 .compact-zone {
@@ -779,6 +786,7 @@ menu {
   }
 
   .zone-strip,
+  .game-table,
   .center-stack {
     grid-template-columns: 1fr;
   }
