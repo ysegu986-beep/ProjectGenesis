@@ -34,8 +34,8 @@ init();
 
 async function init() {
   const [cardsRes, decksRes] = await Promise.all([
-    fetch("../data/cards-v0.json"),
-    fetch("../data/decks-v0.json"),
+    fetch("/data/cards-v0.json"),
+    fetch("/data/decks-v0.json"),
   ]);
   cardDefs = (await cardsRes.json()).cards;
   deckDefs = (await decksRes.json()).decks;
