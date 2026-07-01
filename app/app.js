@@ -267,8 +267,10 @@ async function runCpuTurn() {
   await pause(300);
 
   let cpuAttacked = false;
-  for (const creature of [...state.players[CPU].battle]) {
+  for (const plannedAttacker of cpuAttackOrder()) {
     if (state.winner) break;
+    const creature = state.players[CPU].battle.find((card) => card.uid === plannedAttacker.uid);
+    if (!creature) continue;
     if (!creature.tapped && !creature.asleep) {
       const target = chooseCpuAttackTarget(creature);
       if (!target) continue;
@@ -535,7 +537,26 @@ function chooseCpuAttackTarget(attacker) {
   if (creatureTarget) return creatureTarget.uid;
 
   if (hasFollowUpPressure && directScore > 0) return "player";
+  if (cpuBlockerBaitAttackScore(attacker) >= 4) return "player";
   return directScore >= 8 ? "player" : null;
+}
+
+function cpuAttackOrder() {
+  const human = state.players[HUMAN];
+  const attackers = state.players[CPU].battle.filter((card) => !card.tapped && !card.asleep);
+  if (availableBlockers(human).length > 0) {
+    return [...attackers].sort((a, b) => cpuSacrificeValue(a) - cpuSacrificeValue(b));
+  }
+  return [...attackers].sort((a, b) => cpuAttackPriority(b) - cpuAttackPriority(a));
+}
+
+function cpuAttackPriority(card) {
+  const breaks = card.text.includes("Wブレイカー") ? 2 : 1;
+  return breaks * 10 + battlePower(card, true) / 1000 + (card.text.includes("スピードアタッカー") ? 3 : 0);
+}
+
+function cpuSacrificeValue(card) {
+  return cpuThreatScore(card) + (card.text.includes("Wブレイカー") ? 10 : 0);
 }
 
 function chooseCpuCreatureAttackTarget(attacker) {
@@ -576,6 +597,32 @@ function cpuDirectAttackScore(attacker) {
   }
 
   return score;
+}
+
+function cpuBlockerBaitAttackScore(attacker) {
+  const human = state.players[HUMAN];
+  const blocker = cpuExpectedHumanBlocker(attacker);
+  if (!blocker) return 0;
+
+  const attackerPower = battlePower(attacker, true);
+  const blockerPower = totalPower(blocker);
+  if (attackerPower >= blockerPower) return 0;
+
+  const remainingAttackers = state.players[CPU].battle.filter((card) => (
+    card.uid !== attacker.uid && !card.tapped && !card.asleep
+  ));
+  if (remainingAttackers.length === 0) return -20;
+
+  const remainingBreaks = remainingAttackers.reduce((sum, card) => (
+    sum + (card.text.includes("Wブレイカー") ? 2 : 1)
+  ), 0);
+  const canOpenPath = remainingBreaks >= Math.max(1, human.shields.length);
+  const pressureScore = canOpenPath ? 28 : remainingBreaks * 6;
+  const shieldUrgency = human.shields.length <= remainingBreaks + 1 ? 8 : 0;
+  const blockerTapValue = Math.floor(cpuThreatScore(blocker) / 2);
+  const sacrificeCost = cpuSacrificeValue(attacker);
+
+  return pressureScore + shieldUrgency + blockerTapValue - sacrificeCost - 8;
 }
 
 function cpuExpectedHumanBlocker(attacker) {
