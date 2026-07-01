@@ -84,6 +84,7 @@ function startGame() {
     manaPlaced: false,
     winner: null,
     autoPay: false,
+    cpuLevel: "normal",
     busy: false,
     draggingAttack: null,
     pendingPayment: null,
@@ -268,7 +269,7 @@ async function runCpuTurn() {
   for (const creature of [...state.players[CPU].battle]) {
     if (state.winner) break;
     if (!creature.tapped && !creature.asleep) {
-      await performAttack(CPU, creature.uid, "player");
+      await performAttack(CPU, creature.uid, chooseCpuAttackTarget(creature));
       render();
       await pause(500);
     }
@@ -392,7 +393,7 @@ function putMana(playerIndex, uidValue) {
 function cpuPutMana() {
   const cpu = state.players[CPU];
   if (cpu.hand.length === 0) return;
-  const card = [...cpu.hand].sort((a, b) => b.cost - a.cost)[0];
+  const card = chooseCpuManaCard(cpu, state.players[HUMAN]);
   removeByUid(cpu.hand, card.uid);
   cpu.mana.push(card);
   state.manaPlaced = true;
@@ -401,15 +402,162 @@ function cpuPutMana() {
 
 async function cpuPlayOneCard() {
   const cpu = state.players[CPU];
+  const human = state.players[HUMAN];
   const playable = cpu.hand
     .filter((card) => canPayCost(cpu, card))
-    .sort((a, b) => {
-      if (a.type !== b.type) return a.type === "クリーチャー" ? -1 : 1;
-      return b.cost - a.cost;
-    });
+    .map((card) => ({ card, score: cpuPlayScore(card, cpu, human) }))
+    .filter((entry) => entry.score > -50)
+    .sort((a, b) => b.score - a.score || b.card.cost - a.card.cost);
   if (playable.length === 0) return false;
-  await playCard(CPU, playable[0].uid);
+  await playCard(CPU, playable[0].card.uid);
   return true;
+}
+
+function chooseCpuManaCard(cpu, opponent) {
+  if (cpu.hand.length === 0) return null;
+  return [...cpu.hand]
+    .map((card) => ({ card, score: cpuManaScore(card, cpu, opponent) }))
+    .sort((a, b) => b.score - a.score || b.card.cost - a.card.cost)[0].card;
+}
+
+function cpuManaScore(card, cpu, opponent) {
+  const futureMana = [...cpu.mana, card];
+  const remainingHand = cpu.hand.filter((candidate) => candidate !== card);
+  const playableAfterMana = remainingHand.filter((candidate) => canPayCostWithMana(futureMana, candidate));
+  const sameIdInHand = remainingHand.some((candidate) => candidate.id === card.id);
+  const hasCivilizationAlready = cpu.mana.some((manaCard) => manaCard.civilization === card.civilization);
+  const unlocksCivilization = !hasCivilizationAlready
+    && remainingHand.some((candidate) => candidate.civilization === card.civilization);
+
+  let score = card.cost * 2;
+  if (sameIdInHand) score += 8;
+  if (unlocksCivilization) score += 10;
+  if (playableAfterMana.length > 0) score += 5;
+  if (canPayCostWithMana(futureMana, card)) score -= 12;
+  if (card.type === "クリーチャー" && card.cost <= 2 && cpu.battle.length < 2) score -= 6;
+  if (card.text.includes("スピードアタッカー") && opponent.shields.length <= 2) score -= 8;
+  if (card.text.includes("ブロッカー") && cpu.shields.length <= 2) score -= 8;
+  if (card.text.includes("山札の上から1枚をマナゾーン") && cpu.mana.length < 5) score -= 6;
+  if (card.text.includes("カードを1枚引く") && cpu.hand.length <= 3) score -= 4;
+
+  return score;
+}
+
+function cpuPlayScore(card, cpu, opponent) {
+  let score = card.cost * 3;
+  if (card.type === "クリーチャー") score += 8;
+  if (card.type === "呪文") score += 2;
+
+  if (card.text.includes("スピードアタッカー")) score += opponent.shields.length <= 2 ? 18 : 8;
+  if (card.text.includes("Wブレイカー")) score += opponent.shields.length <= 2 ? 18 : 7;
+  if (card.text.includes("ブロッカー")) score += cpu.shields.length <= 2 ? 18 : 5;
+  if (card.text.includes("カードを1枚引く")) score += cpu.hand.length <= 3 ? 14 : 7;
+  if (card.text.includes("山札の上から1枚をマナゾーン")) score += cpu.mana.length < 6 ? 14 : 3;
+  if (card.text.includes("手札を1枚マナゾーン")) score += cpu.mana.length < 5 && cpu.hand.length >= 3 ? 12 : 2;
+  if (card.text.includes("シールドに置")) score += cpu.shields.length <= 3 ? 16 : 2;
+  if (card.text.includes("墓地からクリーチャー")) score += cpu.grave.some((graveCard) => graveCard.type === "クリーチャー") ? 12 : -80;
+
+  if (card.id === "FS-002") score += cpu.battle.length > 0 ? 10 : -80;
+  if (card.id === "FS-003") score += cpu.battle.length >= 2 ? 12 : -30;
+
+  if (["F-003", "F-007", "F-010"].includes(card.id)) {
+    score += opponent.battle.some((item) => totalPower(item) <= 2000) ? 22 : -8;
+  }
+  if (["FS-001", "FS-004"].includes(card.id)) {
+    score += opponent.battle.some((item) => totalPower(item) <= 3000) ? 24 : -80;
+  }
+  if (["W-003", "W-009"].includes(card.id)) {
+    score += opponent.battle.some((item) => item.cost <= 2) ? 18 : -4;
+  }
+  if (card.id === "WS-002") {
+    score += opponent.battle.some((item) => item.cost <= 4) ? 22 : -80;
+  }
+  if (["L-003", "L-006", "LS-001", "LS-004"].includes(card.id)) {
+    score += opponent.battle.some((item) => !item.tapped) ? 18 : -50;
+  }
+
+  return score;
+}
+
+function canPayCostWithMana(mana, card) {
+  return mana.length >= card.cost && mana.some((manaCard) => manaCard.civilization === card.civilization);
+}
+
+function chooseCpuAttackTarget(attacker) {
+  const human = state.players[HUMAN];
+  const cpu = state.players[CPU];
+  if (human.shields.length === 0) return "player";
+
+  const breaks = attacker.text.includes("Wブレイカー") ? 2 : 1;
+  const canPressureLethal = human.shields.length <= breaks;
+  const humanCanBlock = human.battle.some((card) => card.text.includes("ブロッカー") && !card.tapped);
+  if (canPressureLethal || (!humanCanBlock && cpu.battle.length >= human.shields.length)) {
+    return "player";
+  }
+
+  const attackableCreatures = human.battle
+    .filter((card) => card.tapped)
+    .map((card) => ({ card, score: cpuAttackCreatureScore(attacker, card) }))
+    .filter((entry) => entry.score > 0)
+    .sort((a, b) => b.score - a.score);
+
+  if (attackableCreatures.length > 0) {
+    return attackableCreatures[0].card.uid;
+  }
+
+  return "player";
+}
+
+function cpuAttackCreatureScore(attacker, defender) {
+  const attackerPower = totalPower(attacker);
+  const defenderPower = totalPower(defender);
+  let score = defender.cost * 3 + Math.floor(defenderPower / 1000);
+
+  if (attackerPower > defenderPower) score += 16;
+  if (attackerPower === defenderPower) score += 5;
+  if (attackerPower < defenderPower) score -= 40;
+  if (defender.text.includes("ブロッカー")) score += 10;
+  if (defender.text.includes("Wブレイカー")) score += 12;
+  if (defender.text.includes("カードを1枚引く")) score += 4;
+  if (attacker.text.includes("Wブレイカー") && state.players[HUMAN].shields.length <= 2) score -= 10;
+
+  return score;
+}
+
+function cpuBestThreat(cards) {
+  return [...cards]
+    .map((card) => ({ card, score: cpuThreatScore(card) }))
+    .sort((a, b) => b.score - a.score)[0]?.card || null;
+}
+
+function cpuThreatScore(card) {
+  let score = card.cost * 3 + Math.floor(totalPower(card) / 1000);
+  if (card.text.includes("ブロッカー")) score += 10;
+  if (card.text.includes("Wブレイカー")) score += 12;
+  if (card.text.includes("スピードアタッカー")) score += 8;
+  if (card.text.includes("カードを1枚引く")) score += 5;
+  if (card.text.includes("パワーを")) score += 4;
+  if (card.tapped) score += 2;
+  return score;
+}
+
+function chooseCpuDiscard(player, opponent) {
+  return [...player.hand]
+    .map((card) => ({ card, score: cpuKeepScore(card, player, opponent) }))
+    .sort((a, b) => a.score - b.score)[0]?.card || null;
+}
+
+function cpuKeepScore(card, player, opponent) {
+  let score = card.cost;
+  if (canPayCost(player, card)) score += 8;
+  if (card.type === "クリーチャー") score += 5;
+  if (card.text.includes("ブロッカー") && player.shields.length <= 3) score += 10;
+  if (card.text.includes("スピードアタッカー") && opponent.shields.length <= 2) score += 10;
+  if (card.text.includes("Wブレイカー")) score += 8;
+  if (card.text.includes("カードを1枚引く")) score += 4;
+  if (player.hand.some((candidate) => candidate !== card && candidate.id === card.id)) score -= 6;
+  if (!hasCivilizationMana(player, card.civilization)) score += 5;
+  return score;
 }
 
 async function playCard(playerIndex, uidValue) {
@@ -462,7 +610,7 @@ async function resolveEnterEffect(playerIndex, card) {
     const candidates = opponent.battle.filter((item) => totalPower(item) <= 2000);
     const target = isHuman
       ? await chooseCard("破壊する相手クリーチャー", candidates, true)
-      : weakest(candidates);
+      : cpuBestThreat(candidates);
     if (target) destroyCreature(1 - playerIndex, target.uid);
   }
   if (card.id === "F-004") {
@@ -477,7 +625,7 @@ async function resolveEnterEffect(playerIndex, card) {
   if (card.id === "N-001") {
     const target = isHuman
       ? await chooseCard("追加でマナに置く手札", player.hand, true)
-      : [...player.hand].sort((a, b) => b.cost - a.cost)[0];
+      : chooseCpuManaCard(player, opponent);
     if (target) {
       removeByUid(player.hand, target.uid);
       player.mana.push(target);
@@ -499,7 +647,9 @@ async function resolveEnterEffect(playerIndex, card) {
   }
   if (["W-002", "W-007"].includes(card.id)) {
     drawOne(player);
-    const discard = [...player.hand].sort((a, b) => b.cost - a.cost)[0];
+    const discard = isHuman
+      ? [...player.hand].sort((a, b) => b.cost - a.cost)[0]
+      : chooseCpuDiscard(player, opponent);
     if (discard) {
       removeByUid(player.hand, discard.uid);
       player.grave.push(discard);
@@ -510,7 +660,7 @@ async function resolveEnterEffect(playerIndex, card) {
     const candidates = opponent.battle.filter((item) => item.cost <= 2);
     const target = isHuman
       ? await chooseCard("手札に戻す相手クリーチャー", candidates, true)
-      : weakest(candidates);
+      : cpuBestThreat(candidates);
     if (target) bounceCreature(1 - playerIndex, target.uid);
   }
   if (card.id === "W-004") {
@@ -523,7 +673,7 @@ async function resolveEnterEffect(playerIndex, card) {
     const candidates = opponent.battle.filter((item) => !item.tapped);
     const target = isHuman
       ? await chooseCard("タップする相手クリーチャー", candidates, true)
-      : candidates[0];
+      : cpuBestThreat(candidates);
     if (target) {
       target.tapped = true;
       setEvent(`${target.name} をタップした。`, { uids: [target.uid] });
@@ -549,7 +699,7 @@ async function resolveSpell(playerIndex, card) {
     const candidates = opponent.battle.filter((item) => totalPower(item) <= 3000);
     const target = isHuman
       ? await chooseCard("破壊する相手クリーチャー", candidates, false)
-      : weakest(candidates);
+      : cpuBestThreat(candidates);
     if (target) destroyCreature(1 - playerIndex, target.uid);
   }
   if (card.id === "FS-002") {
@@ -578,14 +728,14 @@ async function resolveSpell(playerIndex, card) {
     const candidates = opponent.battle.filter((item) => item.cost <= 4);
     const target = isHuman
       ? await chooseCard("手札に戻す相手クリーチャー", candidates, false)
-      : weakest(candidates);
+      : cpuBestThreat(candidates);
     if (target) bounceCreature(1 - playerIndex, target.uid);
   }
   if (["LS-001", "LS-004"].includes(card.id)) {
     const candidates = state.players[1 - playerIndex].battle.filter((item) => !item.tapped);
     const target = isHuman
       ? await chooseCard("タップする相手クリーチャー", candidates, false)
-      : candidates[0];
+      : cpuBestThreat(candidates);
     if (target) {
       target.tapped = true;
       setEvent(`${target.name} をタップした。`, { uids: [target.uid] });
