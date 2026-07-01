@@ -106,20 +106,8 @@ function startGame() {
     player.shields = drawMany(player, 5);
   }
 
-  setStarterOpeningHand(state.players[HUMAN], humanDeckIndex);
-  setStarterOpeningHand(state.players[CPU], cpuDeckIndex);
-
   addLog(`対戦開始。あなたは${deckDefs[humanDeckIndex].name}、CPUは${deckDefs[cpuDeckIndex].name}。`);
   beginHumanTurn();
-}
-
-function setStarterOpeningHand(player, deckIndex) {
-  const openingHands = [
-    ["F-001", "F-001", "F-002", "N-001", "F-006"],
-    ["L-002", "L-005", "W-002", "LS-001", "W-006"],
-    ["D-001", "D-002", "D-003", "DS-001", "D-004"],
-  ];
-  setOpeningHand(player, openingHands[deckIndex] || []);
 }
 
 function createPlayer(label, deckDef, cpu) {
@@ -152,31 +140,6 @@ function createCard(def) {
     asleep: false,
     tempPower: 0,
   };
-}
-
-function setOpeningHand(player, openingIds) {
-  player.deck.push(...player.hand);
-  player.hand = [];
-  shuffle(player.deck);
-
-  for (const id of openingIds) {
-    const card = removeFirstById(player.deck, id);
-    if (card) player.hand.push(card);
-  }
-
-  while (player.hand.length < 5) {
-    const card = player.deck.shift();
-    if (!card) break;
-    player.hand.push(card);
-  }
-
-  shuffle(player.deck);
-}
-
-function removeFirstById(list, cardId) {
-  const index = list.findIndex((card) => card.id === cardId);
-  if (index < 0) return null;
-  return list.splice(index, 1)[0];
 }
 
 function beginHumanTurn() {
@@ -1140,7 +1103,7 @@ async function performAttack(attackerIndex, attackerUid, targetUid) {
       battleCreatures(attackerIndex, attacker, 1 - attackerIndex, blocker);
       return;
     }
-    attackPlayer(attackerIndex, attacker);
+    await attackPlayer(attackerIndex, attacker);
     return;
   }
 
@@ -1193,7 +1156,7 @@ function cpuBlockerScore(attacker, blocker, urgentDefense) {
   return score;
 }
 
-function attackPlayer(attackerIndex, attacker) {
+async function attackPlayer(attackerIndex, attacker) {
   const attackerOwner = state.players[attackerIndex];
   const defenderOwner = state.players[1 - attackerIndex];
   if (defenderOwner.shields.length === 0) {
@@ -1204,12 +1167,68 @@ function attackPlayer(attackerIndex, attacker) {
   const breaks = attacker.text.includes("Wブレイカー") ? 2 : 1;
   const actualBreaks = Math.min(breaks, defenderOwner.shields.length);
   for (let i = 0; i < actualBreaks; i += 1) {
-    defenderOwner.hand.push(defenderOwner.shields.shift());
+    await resolveShieldBreak(1 - attackerIndex, defenderOwner.shields.shift());
   }
   setEvent(`${attacker.name} が ${defenderOwner.label} のシールドを${actualBreaks}枚ブレイク。`, {
     uids: [attacker.uid],
     zones: [attackerIndex === HUMAN ? "cpu-shields" : "human-shields"],
   });
+}
+
+async function resolveShieldBreak(defenderIndex, card) {
+  const defender = state.players[defenderIndex];
+  if (!card) return;
+  resetCard(card);
+
+  if (canUseShieldTrigger(defenderIndex, card)) {
+    const useTrigger = defenderIndex === HUMAN
+      ? await chooseShieldTrigger(card)
+      : cpuShouldUseShieldTrigger(defenderIndex, card);
+    if (useTrigger) {
+      setEvent(`${defender.label} は ${card.name} をシールドトリガーで使った。`, {
+        uids: [card.uid],
+        zones: [defenderIndex === HUMAN ? "human-shields" : "cpu-shields"],
+      });
+      try {
+        await resolveSpell(defenderIndex, card);
+      } catch (error) {
+        if (error !== CARD_USE_CANCELLED) throw error;
+        defender.hand.push(card);
+        setEvent(`${defender.label} は ${card.name} を手札に加えた。`, {
+          uids: [card.uid],
+          zones: [defenderIndex === HUMAN ? "human-hand" : "cpu-hand"],
+        });
+        return;
+      }
+      resetCard(card);
+      defender.grave.push(card);
+      return;
+    }
+  }
+
+  defender.hand.push(card);
+}
+
+function canUseShieldTrigger(defenderIndex, card) {
+  if (card.type !== "呪文" || !card.text.includes("シールドトリガー")) return false;
+  const defender = state.players[defenderIndex];
+  const opponent = state.players[1 - defenderIndex];
+  if (["FS-001", "DS-001"].includes(card.id)) {
+    const limit = card.id === "FS-001" ? fireSpellDestroyLimit(card) : darkSpellDestroyLimit(card);
+    return opponent.battle.some((item) => totalPower(item) <= limit);
+  }
+  if (card.id === "LS-001") return opponent.battle.some((item) => !item.tapped);
+  if (["NS-002", "WS-001"].includes(card.id)) return defender.deck.length > 0;
+  return true;
+}
+
+function cpuShouldUseShieldTrigger(defenderIndex, card) {
+  if (!canUseShieldTrigger(defenderIndex, card)) return false;
+  const defender = state.players[defenderIndex];
+  if (["FS-001", "DS-001", "LS-001"].includes(card.id)) return true;
+  if (card.id === "NS-002") return defender.mana.length < 6;
+  if (card.id === "WS-001") return defender.hand.length <= 5;
+  return true;
 }
 
 function battleCreatures(attackerIndex, attacker, defenderIndex, defender) {
@@ -1709,6 +1728,43 @@ function chooseCard(title, cards, optional = false) {
     const handleClose = () => {
       cleanup();
       reject(CARD_USE_CANCELLED);
+    };
+    const cleanup = () => {
+      els.dialog.classList.remove("card-choice-dialog");
+      els.choiceList.removeEventListener("click", handleChoice);
+      els.dialog.removeEventListener("close", handleClose);
+    };
+    els.choiceList.addEventListener("click", handleChoice);
+    els.dialog.addEventListener("close", handleClose, { once: true });
+    els.dialog.showModal();
+  });
+}
+
+function chooseShieldTrigger(card) {
+  return new Promise((resolve) => {
+    els.dialog.classList.remove("block-choice-dialog");
+    els.dialog.classList.add("card-choice-dialog");
+    els.choiceTitle.textContent = "シールドトリガー";
+    els.choiceList.innerHTML = `
+      <div class="card-choice-grid">
+        ${renderPreviewCard(card)}
+      </div>
+      <div class="card-choice-actions">
+        <button class="no-card-choice" type="button" data-use-trigger="true">使う</button>
+        <button class="cancel-card-use-choice" type="button" data-use-trigger="false">手札に加える</button>
+      </div>
+    `;
+
+    const handleChoice = (event) => {
+      const button = event.target.closest("[data-use-trigger]");
+      if (!button) return;
+      cleanup();
+      els.dialog.close();
+      resolve(button.dataset.useTrigger === "true");
+    };
+    const handleClose = () => {
+      cleanup();
+      resolve(false);
     };
     const cleanup = () => {
       els.dialog.classList.remove("card-choice-dialog");
