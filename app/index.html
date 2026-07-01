@@ -18,6 +18,7 @@
           <button id="skip-mana" type="button">マナパス</button>
           <button id="next-phase" type="button">次のフェーズ</button>
           <button id="end-turn" type="button">ターン終了</button>
+          <button id="expand-log" type="button">ログ</button>
         </div>
       </header>
 
@@ -25,16 +26,6 @@
 
       <section class="battlefield" id="battlefield"></section>
 
-      <aside class="log-panel">
-        <div class="panel-heading">
-          <h2>ログ</h2>
-          <div class="panel-actions">
-            <button id="expand-log" type="button">全部見る</button>
-            <button id="clear-log" type="button">消す</button>
-          </div>
-        </div>
-        <ol id="game-log"></ol>
-      </aside>
     </main>
 
     <dialog id="choice-dialog">
@@ -52,6 +43,7 @@
         <h2>ログ</h2>
         <ol id="full-game-log" class="full-game-log"></ol>
         <menu>
+          <button id="clear-log" type="button">消す</button>
           <button value="close">閉じる</button>
         </menu>
       </form>

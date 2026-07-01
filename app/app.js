@@ -18,7 +18,6 @@ const els = {
   status: document.querySelector("#game-status"),
   scoreboard: document.querySelector("#scoreboard"),
   battlefield: document.querySelector("#battlefield"),
-  log: document.querySelector("#game-log"),
   fullLog: document.querySelector("#full-game-log"),
   newGame: document.querySelector("#new-game"),
   skipMana: document.querySelector("#skip-mana"),
@@ -719,10 +718,8 @@ function render() {
 }
 
 function renderLog() {
-  const preview = state.log.slice(0, 4);
-  els.log.innerHTML = preview.map((entry) => `<li>${escapeHtml(entry)}</li>`).join("");
   els.fullLog.innerHTML = state.log.map((entry) => `<li>${escapeHtml(entry)}</li>`).join("");
-  els.expandLog.textContent = `全部見る (${state.log.length})`;
+  els.expandLog.textContent = `ログ (${state.log.length})`;
   els.expandLog.disabled = !state.log.length;
 }
 
@@ -754,9 +751,6 @@ function renderGameTable() {
   return `
     <section class="game-table">
       ${renderPlayerArea(state.players[CPU], CPU, true)}
-      <section class="center-stack">
-        <div class="event-banner">${escapeHtml(state.eventMessage || "カードを選んで対戦を進めよう。")}</div>
-      </section>
       ${renderPlayerArea(state.players[HUMAN], HUMAN, false)}
     </section>
   `;
@@ -847,6 +841,7 @@ function renderCard(card, playerIndex, zone) {
       <div class="card-actions">
         ${zone === "hand" ? `<button data-action="mana" data-uid="${card.uid}" ${canMana ? "" : "disabled"}>マナへ</button>` : ""}
         ${zone === "hand" ? `<button data-action="play" data-uid="${card.uid}" ${playable ? "" : "disabled"}>${card.type === "呪文" ? "詠唱" : "召喚"}</button>` : ""}
+        ${zone === "battle" ? `<button data-action="select-attacker" data-uid="${card.uid}" ${canAttack ? "" : "disabled"}>攻撃</button>` : ""}
       </div>
     </article>
   `;

@@ -42,12 +42,12 @@ button:disabled {
 
 .app-shell {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 260px;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: 52px 58px minmax(0, 1fr);
   grid-template-areas:
-    "topbar topbar"
-    "score log"
-    "field log";
+    "topbar"
+    "score"
+    "field";
   height: 100vh;
   overflow: hidden;
 }
@@ -82,8 +82,7 @@ button:disabled {
   justify-content: flex-end;
 }
 
-.topbar-actions button,
-.panel-heading button {
+.topbar-actions button {
   padding: 0 12px;
 }
 
@@ -140,14 +139,10 @@ button:disabled {
 .game-table {
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: 34px minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
   height: 100%;
   min-height: 0;
   gap: 6px;
-}
-
-.center-stack {
-  order: -1;
 }
 
 .duel-area {
@@ -292,24 +287,6 @@ button:disabled {
 
 .human .hand-lane {
   background: #fff6e6;
-}
-
-.center-stack {
-  display: block;
-}
-
-.event-banner {
-  height: 34px;
-  padding: 6px 10px;
-  border: 1px solid #b9aa91;
-  border-radius: 8px;
-  background: #24211b;
-  color: #fff7e8;
-  font-weight: 800;
-  line-height: 1.25;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .player-board {
@@ -659,49 +636,6 @@ button:disabled {
   background: #fffdf8;
 }
 
-.log-panel {
-  grid-area: log;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
-  border-left: 1px solid #d8d0c2;
-  background: #fffaf0;
-}
-
-.panel-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 10px;
-  border-bottom: 1px solid #e4ded2;
-}
-
-.panel-heading h2 {
-  margin: 0;
-  font-size: 16px;
-}
-
-.panel-actions {
-  display: flex;
-  gap: 6px;
-}
-
-#game-log {
-  min-height: 104px;
-  max-height: 104px;
-  margin: 0;
-  padding: 8px 8px 8px 26px;
-  overflow: hidden;
-  font-size: 12px;
-  line-height: 1.35;
-}
-
-#game-log li {
-  margin-bottom: 6px;
-}
-
 dialog {
   width: min(620px, calc(100vw - 24px));
   border: 1px solid #bdb4a4;
@@ -758,23 +692,12 @@ menu {
     grid-template-areas:
       "topbar"
       "score"
-      "field"
-      "log";
-  }
-
-  .log-panel {
-    min-height: 240px;
-    border-top: 1px solid #d8d0c2;
-    border-left: 0;
+      "field";
   }
 
   .zone-strip,
   .game-table {
     grid-template-columns: 1fr;
-  }
-
-  .event-banner {
-    grid-column: auto;
   }
 }
 
