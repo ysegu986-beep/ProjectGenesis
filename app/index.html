@@ -33,7 +33,10 @@
       <aside class="log-panel">
         <div class="panel-heading">
           <h2>ログ</h2>
-          <button id="clear-log" type="button">消す</button>
+          <div class="panel-actions">
+            <button id="expand-log" type="button">全部見る</button>
+            <button id="clear-log" type="button">消す</button>
+          </div>
         </div>
         <ol id="game-log"></ol>
       </aside>
@@ -45,6 +48,16 @@
         <div id="choice-list" class="choice-list"></div>
         <menu>
           <button value="cancel">キャンセル</button>
+        </menu>
+      </form>
+    </dialog>
+
+    <dialog id="log-dialog">
+      <form method="dialog">
+        <h2>ログ</h2>
+        <ol id="full-game-log" class="full-game-log"></ol>
+        <menu>
+          <button value="close">閉じる</button>
         </menu>
       </form>
     </dialog>

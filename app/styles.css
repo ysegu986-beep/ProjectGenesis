@@ -712,7 +712,7 @@ button:disabled {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 12px;
+  padding: 10px;
   border-bottom: 1px solid #e4ded2;
 }
 
@@ -721,17 +721,23 @@ button:disabled {
   font-size: 16px;
 }
 
+.panel-actions {
+  display: flex;
+  gap: 6px;
+}
+
 #game-log {
-  min-height: 0;
+  min-height: 124px;
+  max-height: 124px;
   margin: 0;
-  padding: 12px 12px 12px 32px;
-  overflow: auto;
+  padding: 10px 10px 10px 30px;
+  overflow: hidden;
   font-size: 13px;
   line-height: 1.45;
 }
 
 #game-log li {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 dialog {
@@ -748,6 +754,22 @@ dialog::backdrop {
 
 dialog h2 {
   margin: 0 0 12px;
+}
+
+.full-game-log {
+  max-height: min(60vh, 520px);
+  margin: 0;
+  padding: 12px 12px 12px 32px;
+  overflow: auto;
+  border: 1px solid #ded2c0;
+  border-radius: 8px;
+  background: #fffdf8;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.full-game-log li {
+  margin-bottom: 8px;
 }
 
 .choice-list {

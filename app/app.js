@@ -21,11 +21,14 @@ const els = {
   scoreboard: document.querySelector("#scoreboard"),
   battlefield: document.querySelector("#battlefield"),
   log: document.querySelector("#game-log"),
+  fullLog: document.querySelector("#full-game-log"),
   newGame: document.querySelector("#new-game"),
   skipMana: document.querySelector("#skip-mana"),
   nextPhase: document.querySelector("#next-phase"),
   endTurn: document.querySelector("#end-turn"),
+  expandLog: document.querySelector("#expand-log"),
   clearLog: document.querySelector("#clear-log"),
+  logDialog: document.querySelector("#log-dialog"),
   dialog: document.querySelector("#choice-dialog"),
   choiceTitle: document.querySelector("#choice-title"),
   choiceList: document.querySelector("#choice-list"),
@@ -45,6 +48,11 @@ async function init() {
   els.skipMana.addEventListener("click", skipMana);
   els.nextPhase.addEventListener("click", nextPhase);
   els.endTurn.addEventListener("click", endHumanTurn);
+  els.expandLog.addEventListener("click", () => {
+    if (!state) return;
+    renderLog();
+    els.logDialog.showModal();
+  });
   els.clearLog.addEventListener("click", () => {
     if (!state) return;
     state.log = [];
@@ -669,7 +677,15 @@ function render() {
 
   els.scoreboard.innerHTML = state.players.map(renderSummary).join("");
   els.battlefield.innerHTML = renderGameTable();
-  els.log.innerHTML = state.log.map((entry) => `<li>${escapeHtml(entry)}</li>`).join("");
+  renderLog();
+}
+
+function renderLog() {
+  const preview = state.log.slice(0, 4);
+  els.log.innerHTML = preview.map((entry) => `<li>${escapeHtml(entry)}</li>`).join("");
+  els.fullLog.innerHTML = state.log.map((entry) => `<li>${escapeHtml(entry)}</li>`).join("");
+  els.expandLog.textContent = `全部見る (${state.log.length})`;
+  els.expandLog.disabled = !state.log.length;
 }
 
 function guideText() {
