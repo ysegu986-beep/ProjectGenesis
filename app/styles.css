@@ -46,7 +46,7 @@ button:disabled {
   grid-template-rows: 42px 50px minmax(0, 1fr);
   grid-template-areas:
     "topbar topbar"
-    "score controls"
+    "score score"
     "field controls";
   height: 100vh;
   min-height: 640px;
@@ -57,11 +57,17 @@ button:disabled {
   grid-area: topbar;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
   gap: 10px;
   padding: 5px 10px;
   border-bottom: 1px solid #d8d0c2;
   background: #fff9ec;
+}
+
+.header-action {
+  min-height: 30px;
+  padding: 0 12px;
+  font-size: 12px;
 }
 
 .topbar h1 {
@@ -82,6 +88,7 @@ button:disabled {
   flex-direction: column;
   gap: 6px;
   align-self: stretch;
+  justify-content: flex-end;
   padding: 5px 8px 8px 0;
   border-left: 1px solid #d8d0c2;
 }
@@ -809,7 +816,7 @@ menu {
     grid-template-columns: minmax(0, 1fr) 96px;
     grid-template-areas:
       "topbar topbar"
-      "score controls"
+      "score score"
       "field controls";
   }
 
@@ -832,8 +839,8 @@ menu {
   }
 
   .topbar {
-    align-items: flex-start;
-    flex-direction: column;
+    align-items: center;
+    flex-direction: row;
   }
 
   .topbar-actions {
