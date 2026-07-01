@@ -245,9 +245,9 @@ async function runCpuTurn() {
   render();
   await pause(450);
 
-  cpuPutMana();
+  const placedMana = cpuPutMana();
   render();
-  await pause(450);
+  await pause(placedMana ? 450 : 250);
 
   state.phaseIndex = 1;
   setEvent("CPU: メインフェーズ。", { zones: ["cpu-hand"] });
@@ -392,12 +392,33 @@ function putMana(playerIndex, uidValue) {
 
 function cpuPutMana() {
   const cpu = state.players[CPU];
-  if (cpu.hand.length === 0) return;
+  if (!shouldCpuPutMana(cpu, state.players[HUMAN])) {
+    state.manaPlaced = true;
+    setEvent("CPUはマナチャージを見送った。", { zones: ["cpu-hand"] });
+    return false;
+  }
   const card = chooseCpuManaCard(cpu, state.players[HUMAN]);
+  if (!card) return false;
   removeByUid(cpu.hand, card.uid);
   cpu.mana.push(card);
   state.manaPlaced = true;
   setEvent(`CPUはカードを1枚マナに置いた。`, { zones: ["cpu-mana"], uids: [card.uid] });
+  return true;
+}
+
+function shouldCpuPutMana(cpu, opponent) {
+  if (cpu.hand.length === 0) return false;
+  if (cpu.hand.length === 1) return false;
+
+  const playableNow = cpu.hand.filter((card) => canPayCost(cpu, card));
+  if (cpu.hand.length <= 2 && playableNow.length > 0) return false;
+
+  const hasDuplicate = cpu.hand.some((card, index) => cpu.hand.findIndex((candidate) => candidate.id === card.id) !== index);
+  const missingCivilization = cpu.hand.some((card) => !cpu.mana.some((manaCard) => manaCard.civilization === card.civilization));
+  const wantsMoreMana = cpu.mana.length < 5 || cpu.hand.some((card) => card.cost > cpu.mana.length);
+  const bestManaCard = chooseCpuManaCard(cpu, opponent);
+
+  return Boolean(bestManaCard && (wantsMoreMana || hasDuplicate || missingCivilization));
 }
 
 async function cpuPlayOneCard() {
