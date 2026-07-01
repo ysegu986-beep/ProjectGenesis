@@ -464,7 +464,7 @@ function cpuPlayScore(card, cpu, opponent) {
     score += opponent.battle.some((item) => totalPower(item) <= 2000) ? 22 : -8;
   }
   if (["FS-001", "FS-004"].includes(card.id)) {
-    score += opponent.battle.some((item) => totalPower(item) <= 3000) ? 24 : -80;
+    score += opponent.battle.some((item) => totalPower(item) <= fireSpellDestroyLimit(card)) ? 24 : -80;
   }
   if (["W-003", "W-009"].includes(card.id)) {
     score += opponent.battle.some((item) => item.cost <= 2) ? 18 : -4;
@@ -474,6 +474,9 @@ function cpuPlayScore(card, cpu, opponent) {
   }
   if (["L-003", "L-006", "LS-001", "LS-004"].includes(card.id)) {
     score += opponent.battle.some((item) => !item.tapped) ? 18 : -50;
+  }
+  if (card.id === "LS-003") {
+    score += opponent.battle.some((item) => !item.tapped) ? 12 : 0;
   }
 
   return score;
@@ -564,6 +567,10 @@ function drawAmount(card) {
   if (card.text.includes("カードを2枚引")) return 2;
   if (card.text.includes("カードを1枚引")) return 1;
   return 0;
+}
+
+function fireSpellDestroyLimit(card) {
+  return card.id === "FS-004" ? 5000 : 3000;
 }
 
 async function playCard(playerIndex, uidValue) {
@@ -702,7 +709,7 @@ async function resolveSpell(playerIndex, card) {
   const isHuman = playerIndex === HUMAN;
 
   if (["FS-001", "FS-004"].includes(card.id)) {
-    const candidates = opponent.battle.filter((item) => totalPower(item) <= 3000);
+    const candidates = opponent.battle.filter((item) => totalPower(item) <= fireSpellDestroyLimit(card));
     const target = isHuman
       ? await chooseCard("破壊する相手クリーチャー", candidates, false)
       : cpuBestThreat(candidates);
@@ -718,13 +725,23 @@ async function resolveSpell(playerIndex, card) {
     }
   }
   if (["NS-001", "NS-002", "NS-003"].includes(card.id)) {
-    const top = player.deck.shift();
-    if (top) {
-      player.mana.push(top);
-      setEvent(`${player.label} は山札の上から1枚をマナに置いた。`, {
-        uids: [top.uid],
+    const count = card.id === "NS-003" ? 2 : 1;
+    const moved = [];
+    for (let i = 0; i < count; i += 1) {
+      const top = player.deck.shift();
+      if (top) {
+        player.mana.push(top);
+        moved.push(top);
+      }
+    }
+    if (moved.length > 0) {
+      setEvent(`${player.label} は山札の上から${moved.length}枚をマナに置いた。`, {
+        uids: moved.map((movedCard) => movedCard.uid),
         zones: [isHuman ? "human-mana" : "cpu-mana"],
       });
+    }
+    if (card.id === "NS-001") {
+      drawOne(player);
     }
   }
   if (card.id === "WS-001") {
@@ -781,6 +798,14 @@ async function resolveSpell(playerIndex, card) {
       setEvent(`${player.label} は山札の上から1枚をシールドに置いた。`, {
         zones: [isHuman ? "human-shields" : "cpu-shields"],
       });
+    }
+    const candidates = opponent.battle.filter((item) => !item.tapped);
+    const target = isHuman
+      ? await chooseCard("タップする相手クリーチャー", candidates, true)
+      : cpuBestThreat(candidates);
+    if (target) {
+      target.tapped = true;
+      setEvent(`${target.name} をタップした。`, { uids: [target.uid] });
     }
   }
   if (card.id === "FS-003") {
