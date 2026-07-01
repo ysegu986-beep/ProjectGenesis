@@ -13,6 +13,7 @@ let cardDefs = [];
 let deckDefs = [];
 let state = null;
 let uid = 1;
+let humanDeckIndex = 0;
 
 const els = {
   status: document.querySelector("#game-status"),
@@ -20,6 +21,7 @@ const els = {
   battlefield: document.querySelector("#battlefield"),
   fullLog: document.querySelector("#full-game-log"),
   newGame: document.querySelector("#new-game"),
+  deckSelect: document.querySelector("#deck-select"),
   autoPay: document.querySelector("#auto-pay"),
   skipMana: document.querySelector("#skip-mana"),
   nextPhase: document.querySelector("#next-phase"),
@@ -43,6 +45,10 @@ async function init() {
   deckDefs = (await decksRes.json()).decks;
 
   els.newGame.addEventListener("click", startGame);
+  els.deckSelect.addEventListener("change", () => {
+    humanDeckIndex = Number(els.deckSelect.value);
+    startGame();
+  });
   els.autoPay.addEventListener("click", toggleAutoPay);
   els.skipMana.addEventListener("click", skipMana);
   els.nextPhase.addEventListener("click", nextPhase);
@@ -68,6 +74,7 @@ async function init() {
 
 function startGame() {
   uid = 1;
+  const cpuDeckIndex = humanDeckIndex === 0 ? 1 : 0;
   state = {
     turn: 1,
     active: HUMAN,
@@ -84,8 +91,8 @@ function startGame() {
     flashZones: [],
     log: [],
     players: [
-      createPlayer("あなた", deckDefs[0], false),
-      createPlayer("CPU", deckDefs[1], true),
+      createPlayer("あなた", deckDefs[humanDeckIndex], false),
+      createPlayer("CPU", deckDefs[cpuDeckIndex], true),
     ],
   };
 
@@ -95,11 +102,19 @@ function startGame() {
     player.shields = drawMany(player, 5);
   }
 
-  setOpeningHand(state.players[HUMAN], ["F-001", "F-001", "F-002", "N-001", "F-005"]);
-  setOpeningHand(state.players[CPU], ["L-002", "L-004", "W-002", "LS-001", "W-001"]);
+  setStarterOpeningHand(state.players[HUMAN], humanDeckIndex);
+  setStarterOpeningHand(state.players[CPU], cpuDeckIndex);
 
-  addLog("対戦開始。あなたは火自然アグロ、CPUは水光コントロール。");
+  addLog(`対戦開始。あなたは${deckDefs[humanDeckIndex].name}、CPUは${deckDefs[cpuDeckIndex].name}。`);
   beginHumanTurn();
+}
+
+function setStarterOpeningHand(player, deckIndex) {
+  const openingHands = [
+    ["F-001", "F-001", "F-002", "N-001", "F-006"],
+    ["L-002", "L-005", "W-002", "LS-001", "W-006"],
+  ];
+  setOpeningHand(player, openingHands[deckIndex] || []);
 }
 
 function createPlayer(label, deckDef, cpu) {
@@ -1019,6 +1034,7 @@ function renderCard(card, playerIndex, zone) {
     <article class="card ${canAttack ? "attackable" : ""} ${canDropAttack ? "drop-creature" : ""} ${card.tapped ? "tapped" : ""} ${card.asleep ? "asleep" : ""} ${playable || canMana || canAttack ? "ready" : ""} ${cardFlash(card)}" ${canAttack ? `${canDirectAttack ? `data-action="select-attacker"` : ""} data-drag-attack="true" draggable="true" data-uid="${card.uid}"` : ""} ${canDropAttack ? `data-drop-target="creature" data-uid="${card.uid}"` : ""}>
       <div class="card-visual ${CIV_CLASS[card.civilization] || ""}">
         <div class="cost-orb">${card.cost}</div>
+        ${card.text.includes("ブロッカー") ? `<div class="blocker-mark" title="ブロッカー">B</div>` : ""}
         <div class="card-type">${escapeHtml(card.civilization)} / ${escapeHtml(card.type)}</div>
         ${card.type === "クリーチャー" ? `<div class="power-box">${totalPower(card)}</div>` : `<div class="spell-mark">SPELL</div>`}
       </div>

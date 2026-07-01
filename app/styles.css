@@ -70,6 +70,30 @@ button:disabled {
   font-size: 12px;
 }
 
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-controls label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #4f463c;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.header-controls select {
+  min-height: 30px;
+  border: 1px solid #8e887b;
+  border-radius: 6px;
+  background: #fffaf0;
+  color: #1c1b17;
+  font: inherit;
+}
+
 .topbar h1 {
   margin: 0;
   font-size: 17px;
@@ -673,6 +697,23 @@ button.mana-chip {
   font-weight: 900;
 }
 
+.blocker-mark {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  background: #1d8dff;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  box-shadow: 0 1px 4px rgba(10, 40, 80, 0.35);
+}
+
 .card-type {
   position: absolute;
   right: 4px;
@@ -907,6 +948,11 @@ menu {
   .topbar {
     align-items: center;
     flex-direction: row;
+  }
+
+  .header-controls {
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 
   .topbar-actions {
