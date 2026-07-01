@@ -16,8 +16,6 @@ let uid = 1;
 
 const els = {
   status: document.querySelector("#game-status"),
-  phaseTrack: document.querySelector("#phase-track"),
-  phaseGuide: document.querySelector("#phase-guide"),
   scoreboard: document.querySelector("#scoreboard"),
   battlefield: document.querySelector("#battlefield"),
   log: document.querySelector("#game-log"),
@@ -70,7 +68,6 @@ function startGame() {
     active: HUMAN,
     phaseIndex: 0,
     manaPlaced: false,
-    selectedAttacker: null,
     winner: null,
     busy: false,
     eventMessage: "",
@@ -157,7 +154,6 @@ function beginHumanTurn() {
   state.active = HUMAN;
   state.phaseIndex = 0;
   state.manaPlaced = false;
-  state.selectedAttacker = null;
   startTurn(state.players[HUMAN]);
   setEvent("あなたのターン。手札から1枚マナに置こう。", { zones: ["human-hand"] });
   render();
@@ -183,7 +179,6 @@ function nextPhase() {
     render();
     return;
   }
-  state.selectedAttacker = null;
   if (phase() === "マナ") {
     state.phaseIndex = 1;
     setEvent("メインフェーズ。使えるカードが光ります。", { zones: ["human-hand"] });
@@ -207,7 +202,6 @@ function skipMana() {
 
 async function endHumanTurn() {
   if (!canHumanAct()) return;
-  state.selectedAttacker = null;
   setEvent("あなたのターン終了。CPUが動きます。", { zones: ["cpu-area"] });
   render();
   await runCpuTurn();
@@ -283,21 +277,6 @@ function handleBattlefieldClick(event) {
   }
   if (action === "select-attacker") {
     performAttack(HUMAN, uidValue, "player");
-    state.selectedAttacker = null;
-    render();
-  }
-  if (action === "attack-player") {
-    performAttack(HUMAN, state.selectedAttacker, "player");
-    state.selectedAttacker = null;
-    render();
-  }
-  if (action === "attack-creature") {
-    performAttack(HUMAN, state.selectedAttacker, uidValue);
-    state.selectedAttacker = null;
-    render();
-  }
-  if (action === "cancel-attack") {
-    state.selectedAttacker = null;
     render();
   }
 }
@@ -684,8 +663,6 @@ function render() {
     ? `勝者: ${state.winner}`
     : `ターン ${state.turn} / ${activePlayer.label} / ${phase()}フェーズ`;
 
-  els.phaseTrack.innerHTML = PHASES.map((name) => `<span class="phase-pill ${phase() === name ? "active" : ""}">${name}</span>`).join("");
-  els.phaseGuide.textContent = guideText();
   els.nextPhase.textContent = nextPhaseLabel();
   els.nextPhase.disabled = !canHumanAct() || (phase() === "マナ" && !state.manaPlaced && state.players[HUMAN].hand.length > 0);
   els.skipMana.disabled = !canHumanAct() || phase() !== "マナ" || state.manaPlaced;
@@ -702,24 +679,6 @@ function renderLog() {
   els.fullLog.innerHTML = state.log.map((entry) => `<li>${escapeHtml(entry)}</li>`).join("");
   els.expandLog.textContent = `全部見る (${state.log.length})`;
   els.expandLog.disabled = !state.log.length;
-}
-
-function guideText() {
-  if (state.winner) return `${state.winner} の勝ち。新しい対戦でやり直せます。`;
-  if (state.busy) return "CPUが考えています。盤面の変化を見てください。";
-  if (phase() === "マナ") {
-    return state.manaPlaced
-      ? "マナは置きました。メインフェーズでカードを使えます。"
-      : "手札から1枚選んで「マナへ」。置きたくないなら「マナパス」。";
-  }
-  if (phase() === "メイン") {
-    return humanPlayableCards().length > 0
-      ? "光っているカードを召喚/詠唱できます。終わったら「アタックへ」。"
-      : "今使えるカードはありません。「アタックへ」で進めます。";
-  }
-  return humanAttackers().length > 0
-    ? "攻撃ボタンで相手プレイヤーへ攻撃します。アタックに入ったら召喚やマナ置きはできません。"
-    : "攻撃できるクリーチャーはいません。「ターン終了」でCPUに渡します。";
 }
 
 function nextPhaseLabel() {
@@ -752,7 +711,6 @@ function renderGameTable() {
       ${renderPlayerArea(state.players[CPU], CPU, true)}
       <section class="center-stack">
         <div class="event-banner">${escapeHtml(state.eventMessage || "カードを選んで対戦を進めよう。")}</div>
-        <div class="turn-note">${escapeHtml(guideText())}</div>
       </section>
       ${renderPlayerArea(state.players[HUMAN], HUMAN, false)}
     </section>
@@ -765,7 +723,6 @@ function renderPlayerArea(player, index, opponent) {
       <div class="duel-area-header">
         <h2>${escapeHtml(player.label)}</h2>
         <span>${escapeHtml(player.deckName)}</span>
-        ${opponent && state.selectedAttacker && canHumanAct() ? `<button class="direct-target" data-action="attack-player">CPUを攻撃</button>` : ""}
       </div>
       <div class="zone-strip">
         ${renderPile("山札", player.deck.length)}
@@ -825,11 +782,9 @@ function renderCard(card, playerIndex, zone) {
   const playable = humanTurn && zone === "hand" && phase() === "メイン" && canPayCost(state.players[HUMAN], card);
   const canMana = humanTurn && zone === "hand" && phase() === "マナ" && !state.manaPlaced;
   const canAttack = humanTurn && zone === "battle" && phase() === "アタック" && !card.tapped && !card.asleep;
-  const selected = state.selectedAttacker === card.uid;
   const reason = cardReason(card, playerIndex, zone);
-  const canBeAttackTarget = playerIndex === CPU && zone === "battle" && state.selectedAttacker && card.tapped && canHumanAct();
   return `
-    <article class="card ${card.tapped ? "tapped" : ""} ${card.asleep ? "asleep" : ""} ${playable || canMana || canAttack || canBeAttackTarget ? "ready" : ""} ${selected ? "selected" : ""} ${cardFlash(card)}">
+    <article class="card ${canAttack ? "attackable" : ""} ${card.tapped ? "tapped" : ""} ${card.asleep ? "asleep" : ""} ${playable || canMana || canAttack ? "ready" : ""} ${cardFlash(card)}" ${canAttack ? `data-action="select-attacker" data-uid="${card.uid}"` : ""}>
       <div class="card-visual ${CIV_CLASS[card.civilization] || ""}">
         <div class="cost-orb">${card.cost}</div>
         <div class="card-type">${escapeHtml(card.civilization)} / ${escapeHtml(card.type)}</div>
@@ -846,8 +801,6 @@ function renderCard(card, playerIndex, zone) {
       <div class="card-actions">
         ${zone === "hand" ? `<button data-action="mana" data-uid="${card.uid}" ${canMana ? "" : "disabled"}>マナへ</button>` : ""}
         ${zone === "hand" ? `<button data-action="play" data-uid="${card.uid}" ${playable ? "" : "disabled"}>${card.type === "呪文" ? "詠唱" : "召喚"}</button>` : ""}
-        ${zone === "battle" ? `<button data-action="select-attacker" data-uid="${card.uid}" ${canAttack ? "" : "disabled"}>攻撃</button>` : ""}
-        ${canBeAttackTarget ? `<button data-action="attack-creature" data-uid="${card.uid}">このカードを攻撃</button>` : ""}
       </div>
     </article>
   `;
@@ -912,15 +865,6 @@ function chooseCard(title, cards, optional = false) {
     els.dialog.addEventListener("close", handleClose, { once: true });
     els.dialog.showModal();
   });
-}
-
-function humanPlayableCards() {
-  const player = state.players[HUMAN];
-  return player.hand.filter((card) => canPayCost(player, card));
-}
-
-function humanAttackers() {
-  return state.players[HUMAN].battle.filter((card) => !card.tapped && !card.asleep);
 }
 
 function escapeHtml(value) {

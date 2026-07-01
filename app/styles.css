@@ -43,10 +43,9 @@ button:disabled {
 .app-shell {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 260px;
-  grid-template-rows: 52px 46px 58px minmax(0, 1fr);
+  grid-template-rows: 52px 58px minmax(0, 1fr);
   grid-template-areas:
     "topbar topbar"
-    "guide log"
     "score log"
     "field log";
   height: 100vh;
@@ -86,51 +85,6 @@ button:disabled {
 .topbar-actions button,
 .panel-heading button {
   padding: 0 12px;
-}
-
-.guide-panel {
-  grid-area: guide;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 8px;
-  align-items: center;
-  padding: 6px 10px 0;
-}
-
-.phase-track {
-  display: flex;
-  gap: 8px;
-}
-
-.phase-pill {
-  min-width: 76px;
-  padding: 5px 8px;
-  border: 1px solid #c6bba9;
-  border-radius: 999px;
-  background: #fffaf0;
-  color: #625a4d;
-  font-size: 13px;
-  font-weight: 800;
-  text-align: center;
-}
-
-.phase-pill.active {
-  border-color: #2f6b72;
-  background: #d7edf0;
-  color: #173b40;
-}
-
-.current-guide {
-  min-height: 34px;
-  display: flex;
-  align-items: center;
-  padding: 6px 10px;
-  border: 1px solid #d4cab8;
-  border-radius: 8px;
-  background: #fffaf0;
-  color: #362f26;
-  font-size: 14px;
-  line-height: 1.45;
 }
 
 .scoreboard {
@@ -186,7 +140,7 @@ button:disabled {
 .game-table {
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: 48px minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: 34px minmax(0, 1fr) minmax(0, 1fr);
   height: 100%;
   min-height: 0;
   gap: 6px;
@@ -341,42 +295,21 @@ button:disabled {
 }
 
 .center-stack {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
-  gap: 6px;
-  align-items: stretch;
+  display: block;
 }
 
 .event-banner {
-  padding: 7px 10px;
+  height: 34px;
+  padding: 6px 10px;
   border: 1px solid #b9aa91;
   border-radius: 8px;
   background: #24211b;
   color: #fff7e8;
   font-weight: 800;
-  line-height: 1.45;
-}
-
-.turn-note {
-  padding: 7px 9px;
-  border: 1px solid #d6c8b6;
-  border-radius: 8px;
-  background: #fffaf0;
-}
-
-.direct-target {
-  padding: 0 12px;
-  border-color: #b26a22;
-  background: #ffe1bd;
-  font-weight: 800;
-}
-
-.turn-note {
-  display: flex;
-  align-items: center;
-  color: #362f26;
-  font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .player-board {
@@ -455,6 +388,14 @@ button:disabled {
     0 2px 0 rgba(36, 32, 26, 0.18);
 }
 
+.card.attackable {
+  cursor: pointer;
+}
+
+.card.attackable:hover {
+  border-color: #b26a22;
+}
+
 .card.selected {
   border-color: #b26a22;
   box-shadow:
@@ -504,7 +445,7 @@ button:disabled {
 
 .card-visual {
   position: relative;
-  min-height: 34px;
+  min-height: 38px;
   border-radius: 6px;
   border: 1px solid rgba(0, 0, 0, 0.22);
   overflow: hidden;
@@ -563,6 +504,10 @@ button:disabled {
   color: #29231d;
   font-size: 9px;
   font-weight: 800;
+  max-width: calc(100% - 44px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .power-box,
@@ -799,7 +744,6 @@ menu {
     grid-template-columns: 1fr;
     grid-template-areas:
       "topbar"
-      "guide"
       "score"
       "field"
       "log";
@@ -812,8 +756,7 @@ menu {
   }
 
   .zone-strip,
-  .game-table,
-  .center-stack {
+  .game-table {
     grid-template-columns: 1fr;
   }
 
@@ -829,13 +772,7 @@ menu {
   }
 
   .scoreboard,
-  .zone-grid,
-  .guide-panel {
+  .zone-grid {
     grid-template-columns: 1fr;
-  }
-
-  .phase-track {
-    overflow-x: auto;
-    padding-bottom: 2px;
   }
 }
