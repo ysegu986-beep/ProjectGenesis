@@ -752,7 +752,6 @@ function renderGameTable() {
       ${renderPlayerArea(state.players[CPU], CPU, true)}
       <section class="center-stack">
         <div class="event-banner">${escapeHtml(state.eventMessage || "カードを選んで対戦を進めよう。")}</div>
-        ${renderAttackPanel()}
         <div class="turn-note">${escapeHtml(guideText())}</div>
       </section>
       ${renderPlayerArea(state.players[HUMAN], HUMAN, false)}
@@ -819,10 +818,6 @@ function renderMana(player, index) {
       </div>
     </div>
   `;
-}
-
-function renderAttackPanel() {
-  return `<div class="action-panel">アタックフェーズでは、攻撃ボタンがそのまま相手プレイヤーへの攻撃になります。</div>`;
 }
 
 function renderCard(card, playerIndex, zone) {
