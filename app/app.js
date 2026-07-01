@@ -286,6 +286,9 @@ function handleBattlefieldClick(event) {
     playCard(HUMAN, uidValue);
   }
   if (action === "select-attacker") {
+    if (phase() === "メイン") {
+      state.phaseIndex = 2;
+    }
     performAttack(HUMAN, uidValue, "player");
     render();
   }
@@ -315,6 +318,9 @@ function handleAttackDrop(event) {
 
   const attackerUid = event.dataTransfer.getData("text/plain") || state.draggingAttack;
   const targetUid = target.dataset.dropTarget === "creature" ? target.dataset.uid : "player";
+  if (phase() === "メイン") {
+    state.phaseIndex = 2;
+  }
   performAttack(HUMAN, attackerUid, targetUid);
   state.draggingAttack = null;
   state.suppressAttackClick = true;
@@ -826,11 +832,12 @@ function renderCard(card, playerIndex, zone) {
   const humanTurn = canHumanAct() && playerIndex === HUMAN;
   const playable = humanTurn && zone === "hand" && phase() === "メイン" && canPayCost(state.players[HUMAN], card);
   const canMana = humanTurn && zone === "hand" && phase() === "マナ" && !state.manaPlaced;
-  const canAttack = humanTurn && zone === "battle" && phase() === "アタック" && !card.tapped && !card.asleep;
+  const canAttack = humanTurn && zone === "battle" && canEnterAttackWith(card);
+  const canDirectAttack = canAttack && phase() === "アタック";
   const canDropAttack = playerIndex === CPU && zone === "battle" && card.tapped;
   const reason = cardReason(card, playerIndex, zone);
   return `
-    <article class="card ${canAttack ? "attackable" : ""} ${canDropAttack ? "drop-creature" : ""} ${card.tapped ? "tapped" : ""} ${card.asleep ? "asleep" : ""} ${playable || canMana || canAttack ? "ready" : ""} ${cardFlash(card)}" ${canAttack ? `data-action="select-attacker" data-drag-attack="true" draggable="true" data-uid="${card.uid}"` : ""} ${canDropAttack ? `data-drop-target="creature" data-uid="${card.uid}"` : ""}>
+    <article class="card ${canDirectAttack ? "attackable" : ""} ${canDropAttack ? "drop-creature" : ""} ${card.tapped ? "tapped" : ""} ${card.asleep ? "asleep" : ""} ${playable || canMana || canAttack ? "ready" : ""} ${cardFlash(card)}" ${canDirectAttack ? `data-action="select-attacker" data-drag-attack="true" draggable="true" data-uid="${card.uid}"` : ""} ${canDropAttack ? `data-drop-target="creature" data-uid="${card.uid}"` : ""}>
       <div class="card-visual ${CIV_CLASS[card.civilization] || ""}">
         <div class="cost-orb">${card.cost}</div>
         <div class="card-type">${escapeHtml(card.civilization)} / ${escapeHtml(card.type)}</div>
@@ -851,6 +858,10 @@ function renderCard(card, playerIndex, zone) {
       </div>
     </article>
   `;
+}
+
+function canEnterAttackWith(card) {
+  return (phase() === "メイン" || phase() === "アタック") && !card.tapped && !card.asleep;
 }
 
 function cardReason(card, playerIndex, zone) {
