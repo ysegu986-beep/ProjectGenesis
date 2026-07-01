@@ -438,7 +438,7 @@ function cpuManaScore(card, cpu, opponent) {
   if (card.text.includes("スピードアタッカー") && opponent.shields.length <= 2) score -= 8;
   if (card.text.includes("ブロッカー") && cpu.shields.length <= 2) score -= 8;
   if (card.text.includes("山札の上から1枚をマナゾーン") && cpu.mana.length < 5) score -= 6;
-  if (card.text.includes("カードを1枚引く") && cpu.hand.length <= 3) score -= 4;
+  if (drawAmount(card) > 0 && cpu.hand.length <= 3) score -= 4;
 
   return score;
 }
@@ -451,7 +451,7 @@ function cpuPlayScore(card, cpu, opponent) {
   if (card.text.includes("スピードアタッカー")) score += opponent.shields.length <= 2 ? 18 : 8;
   if (card.text.includes("Wブレイカー")) score += opponent.shields.length <= 2 ? 18 : 7;
   if (card.text.includes("ブロッカー")) score += cpu.shields.length <= 2 ? 18 : 5;
-  if (card.text.includes("カードを1枚引く")) score += cpu.hand.length <= 3 ? 14 : 7;
+  if (drawAmount(card) > 0) score += cpu.hand.length <= 3 ? 14 + drawAmount(card) * 2 : 7 + drawAmount(card);
   if (card.text.includes("山札の上から1枚をマナゾーン")) score += cpu.mana.length < 6 ? 14 : 3;
   if (card.text.includes("手札を1枚マナゾーン")) score += cpu.mana.length < 5 && cpu.hand.length >= 3 ? 12 : 2;
   if (card.text.includes("シールドに置")) score += cpu.shields.length <= 3 ? 16 : 2;
@@ -518,7 +518,7 @@ function cpuAttackCreatureScore(attacker, defender) {
   if (attackerPower < defenderPower) score -= 40;
   if (defender.text.includes("ブロッカー")) score += 10;
   if (defender.text.includes("Wブレイカー")) score += 12;
-  if (defender.text.includes("カードを1枚引く")) score += 4;
+  if (drawAmount(defender) > 0) score += 4 + drawAmount(defender);
   if (attacker.text.includes("Wブレイカー") && state.players[HUMAN].shields.length <= 2) score -= 10;
 
   return score;
@@ -535,7 +535,7 @@ function cpuThreatScore(card) {
   if (card.text.includes("ブロッカー")) score += 10;
   if (card.text.includes("Wブレイカー")) score += 12;
   if (card.text.includes("スピードアタッカー")) score += 8;
-  if (card.text.includes("カードを1枚引く")) score += 5;
+  if (drawAmount(card) > 0) score += 5 + drawAmount(card);
   if (card.text.includes("パワーを")) score += 4;
   if (card.tapped) score += 2;
   return score;
@@ -554,10 +554,16 @@ function cpuKeepScore(card, player, opponent) {
   if (card.text.includes("ブロッカー") && player.shields.length <= 3) score += 10;
   if (card.text.includes("スピードアタッカー") && opponent.shields.length <= 2) score += 10;
   if (card.text.includes("Wブレイカー")) score += 8;
-  if (card.text.includes("カードを1枚引く")) score += 4;
+  if (drawAmount(card) > 0) score += 4 + drawAmount(card);
   if (player.hand.some((candidate) => candidate !== card && candidate.id === card.id)) score -= 6;
   if (!hasCivilizationMana(player, card.civilization)) score += 5;
   return score;
+}
+
+function drawAmount(card) {
+  if (card.text.includes("カードを2枚引")) return 2;
+  if (card.text.includes("カードを1枚引")) return 1;
+  return 0;
 }
 
 async function playCard(playerIndex, uidValue) {
@@ -721,7 +727,20 @@ async function resolveSpell(playerIndex, card) {
       });
     }
   }
-  if (["WS-001", "WS-003"].includes(card.id)) {
+  if (card.id === "WS-001") {
+    drawOne(player);
+    drawOne(player);
+    const discard = isHuman
+      ? await chooseCard("捨てる手札", player.hand, false)
+      : chooseCpuDiscard(player, opponent);
+    if (discard) {
+      removeByUid(player.hand, discard.uid);
+      player.grave.push(discard);
+      setEvent(`${player.label} は ${discard.name} を捨てた。`, { zones: [isHuman ? "human-grave" : "cpu-grave"] });
+    }
+  }
+  if (card.id === "WS-003") {
+    drawOne(player);
     drawOne(player);
   }
   if (card.id === "WS-002") {
