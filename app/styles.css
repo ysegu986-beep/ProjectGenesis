@@ -148,8 +148,13 @@ button:disabled {
 .duel-area {
   min-height: 0;
   display: grid;
-  grid-template-columns: 132px minmax(0, 1fr) minmax(0, 1.15fr);
-  grid-template-rows: 28px minmax(0, 1fr);
+  grid-template-columns: 92px minmax(0, 1fr) 76px;
+  grid-template-rows: 26px minmax(0, 1fr) 44px minmax(0, 1fr);
+  grid-template-areas:
+    "header header header"
+    "left battle right"
+    "left mana right"
+    "left hand right";
   border: 1px solid #c8bdab;
   border-radius: 8px;
   background: #fffaf0;
@@ -166,6 +171,7 @@ button:disabled {
 }
 
 .duel-area-header {
+  grid-area: header;
   grid-column: 1 / -1;
   display: flex;
   align-items: baseline;
@@ -187,20 +193,37 @@ button:disabled {
   font-weight: 700;
 }
 
-.zone-strip {
+.opponent {
+  grid-template-areas:
+    "header header header"
+    "left hand right"
+    "left mana right"
+    "left battle right";
+}
+
+.side-zone {
   display: grid;
   grid-template-columns: 1fr;
   grid-auto-rows: minmax(0, 1fr);
   gap: 4px;
-  padding: 5px 7px;
+  padding: 5px;
+  min-height: 0;
+}
+
+.deck-shield-zone {
+  grid-area: left;
   border-right: 1px solid #eadfce;
   border-bottom: 0;
 }
 
+.grave-side-zone {
+  grid-area: right;
+  border-left: 1px solid #eadfce;
+}
+
 .pile,
-.shield-zone,
-.mana-zone {
-  min-height: 48px;
+.shield-zone {
+  min-height: 0;
   padding: 4px;
   border: 1px solid #d6c8b6;
   border-radius: 8px;
@@ -229,7 +252,7 @@ button:disabled {
   display: flex;
   flex-wrap: wrap;
   gap: 3px;
-  margin-top: 4px;
+  margin-top: 3px;
 }
 
 .shield {
@@ -249,11 +272,11 @@ button:disabled {
 }
 
 .mana-chip {
-  max-width: 76px;
-  min-width: 34px;
-  padding: 3px 5px;
+  max-width: 88px;
+  min-width: 46px;
+  padding: 2px 5px;
   border: 1px solid #bfb29e;
-  border-radius: 999px;
+  border-radius: 5px;
   background: #f5ebd8;
   font-size: 10px;
   font-weight: 900;
@@ -263,9 +286,40 @@ button:disabled {
   white-space: nowrap;
 }
 
+.mana-chip b {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin-right: 3px;
+  border-radius: 50%;
+  background: rgba(23, 24, 18, 0.78);
+  color: #fff;
+  font-size: 10px;
+}
+
+.mana-chip.fire {
+  border-color: #b9412f;
+  background: #ffd8cf;
+}
+
+.mana-chip.nature {
+  border-color: #3d8b52;
+  background: #dff2d0;
+}
+
+.mana-chip.water {
+  border-color: #2879b9;
+  background: #d7edf8;
+}
+
+.mana-chip.light {
+  border-color: #b89d32;
+  background: #fff1b9;
+}
+
 .mana-chip.tapped {
-  background: #cabda9;
-  color: #5e554a;
+  opacity: 0.62;
   transform: rotate(5deg);
 }
 
@@ -276,13 +330,46 @@ button:disabled {
 }
 
 .battle-lane {
+  grid-area: battle;
   min-width: 0;
   border-bottom: 1px solid #eadfce;
-  border-right: 1px solid #eadfce;
 }
 
 .hand-lane {
+  grid-area: hand;
   min-width: 0;
+}
+
+.mana-zone {
+  grid-area: mana;
+  min-width: 0;
+  min-height: 0;
+  padding: 4px 7px;
+  border-top: 1px dashed #d2b58e;
+  border-bottom: 1px dashed #d2b58e;
+  background: #fff9ed;
+}
+
+.opponent .mana-zone {
+  background: #f1f7ff;
+  border-top-color: #94b3d8;
+  border-bottom-color: #94b3d8;
+}
+
+.mana-zone strong {
+  display: inline-block;
+  margin-right: 8px;
+  color: #4e473d;
+  font-size: 10px;
+  vertical-align: top;
+}
+
+.mana-zone .mana-row {
+  display: inline-flex;
+  width: calc(100% - 84px);
+  max-height: 32px;
+  overflow: hidden;
+  vertical-align: top;
 }
 
 .human .hand-lane {
@@ -695,7 +782,6 @@ menu {
       "field";
   }
 
-  .zone-strip,
   .game-table {
     grid-template-columns: 1fr;
   }

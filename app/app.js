@@ -763,10 +763,11 @@ function renderPlayerArea(player, index, opponent) {
         <h2>${escapeHtml(player.label)}</h2>
         <span>${escapeHtml(player.deckName)}</span>
       </div>
-      <div class="zone-strip">
+      <div class="side-zone deck-shield-zone">
         ${renderPile("山札", player.deck.length)}
         ${renderShields(player, index)}
-        ${renderMana(player, index)}
+      </div>
+      <div class="side-zone grave-side-zone">
         ${renderPile("墓地", player.grave.length)}
       </div>
       <div class="battle-lane ${zoneFlash(index === HUMAN ? "human-battle" : "cpu-battle")}">
@@ -775,6 +776,7 @@ function renderPlayerArea(player, index, opponent) {
           ${player.battle.length ? player.battle.map((card) => renderCard(card, index, "battle")).join("") : `<div class="empty-zone">クリーチャーなし</div>`}
         </div>
       </div>
+      ${renderMana(player, index)}
       <div class="hand-lane ${zoneFlash(index === HUMAN ? "human-hand" : "cpu-hand")}">
         <div class="zone-title"><span>${opponent ? "相手の手札" : "あなたの手札"}</span><span>${player.hand.length}</span></div>
         <div class="card-row hand-row">
@@ -810,10 +812,14 @@ function renderMana(player, index) {
     <div class="mana-zone ${zoneFlash(index === HUMAN ? "human-mana" : "cpu-mana")}">
       <strong>マナ ${availableMana(player)}/${player.mana.length}</strong>
       <div class="mana-row">
-        ${player.mana.map((card) => `<span class="mana-chip ${card.tapped ? "tapped" : ""} ${cardFlash(card)}" title="${escapeHtml(card.name)}">${escapeHtml(card.name)}</span>`).join("") || `<span class="mana-chip empty">0</span>`}
+        ${player.mana.map((card) => `<span class="mana-chip ${CIV_CLASS[card.civilization] || ""} ${card.tapped ? "tapped" : ""} ${cardFlash(card)}" title="${escapeHtml(card.name)}"><b>${escapeHtml(card.civilization)}</b>${escapeHtml(shortCardName(card.name))}</span>`).join("") || `<span class="mana-chip empty">0</span>`}
       </div>
     </div>
   `;
+}
+
+function shortCardName(name) {
+  return String(name || "").replaceAll("の", "").slice(0, 5);
 }
 
 function renderCard(card, playerIndex, zone) {
