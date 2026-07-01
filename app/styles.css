@@ -912,6 +912,36 @@ dialog h2 {
   text-align: left;
 }
 
+.card-choice-grid {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 4px;
+}
+
+.card-choice-button {
+  flex: 0 0 112px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: inherit;
+}
+
+.card-choice-button:hover .choice-card {
+  border-color: #2f6b72;
+  box-shadow:
+    0 0 0 2px rgba(47, 107, 114, 0.18),
+    0 2px 0 rgba(36, 32, 26, 0.18);
+}
+
+.no-card-choice {
+  justify-self: end;
+  min-width: 112px;
+}
+
 .block-choice {
   display: grid;
   gap: 12px;

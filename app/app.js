@@ -1128,14 +1128,18 @@ function chooseCard(title, cards, optional = false) {
       return;
     }
     els.dialog.classList.remove("block-choice-dialog");
+    els.dialog.classList.add("card-choice-dialog");
     els.choiceTitle.textContent = title;
-    els.choiceList.innerHTML = [
-      ...(optional ? [{ label: "選ばない", uid: "" }] : []),
-      ...cards.map((card) => ({
-        label: `${card.name} / コスト${card.cost}${card.power ? ` / ${totalPower(card)}` : ""}`,
-        uid: card.uid,
-      })),
-    ].map((item) => `<button type="button" data-choice="${escapeHtml(item.uid)}">${escapeHtml(item.label)}</button>`).join("");
+    els.choiceList.innerHTML = `
+      <div class="card-choice-grid">
+        ${cards.map((card) => `
+          <button class="card-choice-button" type="button" data-choice="${card.uid}">
+            ${renderPreviewCard(card)}
+          </button>
+        `).join("")}
+      </div>
+      ${optional ? `<button class="no-card-choice" type="button" data-choice="">選ばない</button>` : ""}
+    `;
 
     const handleChoice = (event) => {
       const button = event.target.closest("[data-choice]");
@@ -1149,6 +1153,7 @@ function chooseCard(title, cards, optional = false) {
       resolve(null);
     };
     const cleanup = () => {
+      els.dialog.classList.remove("card-choice-dialog");
       els.choiceList.removeEventListener("click", handleChoice);
       els.dialog.removeEventListener("close", handleClose);
     };
