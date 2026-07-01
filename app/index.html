@@ -13,19 +13,19 @@
           <h1>Project Genesis</h1>
           <p id="game-status">読み込み中</p>
         </div>
-        <div class="topbar-actions">
-          <button id="new-game" type="button">新しい対戦</button>
-          <button id="skip-mana" type="button">マナパス</button>
-          <button id="next-phase" type="button">次のフェーズ</button>
-          <button id="end-turn" type="button">ターン終了</button>
-          <button id="expand-log" type="button">ログ</button>
-        </div>
       </header>
 
       <section class="scoreboard" id="scoreboard"></section>
 
-      <section class="battlefield" id="battlefield"></section>
+      <aside class="topbar-actions" aria-label="ゲーム操作">
+        <button id="new-game" type="button">新しい対戦</button>
+        <button id="skip-mana" type="button">マナパス</button>
+        <button id="next-phase" type="button">次のフェーズ</button>
+        <button id="end-turn" type="button">ターン終了</button>
+        <button id="expand-log" type="button">ログ</button>
+      </aside>
 
+      <section class="battlefield" id="battlefield"></section>
     </main>
 
     <dialog id="choice-dialog">
