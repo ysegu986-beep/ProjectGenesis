@@ -289,6 +289,7 @@ button:disabled {
 .mana-chip {
   max-width: 74px;
   min-width: 36px;
+  min-height: 0;
   padding: 1px 4px;
   border: 1px solid #bfb29e;
   border-radius: 5px;
@@ -299,6 +300,26 @@ button:disabled {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+button.mana-chip {
+  cursor: pointer;
+  line-height: 1.2;
+}
+
+.mana-chip.payable {
+  box-shadow: 0 0 0 2px rgba(47, 107, 114, 0.22);
+}
+
+.mana-chip.selected {
+  outline: 2px solid #2f6b72;
+  outline-offset: -2px;
+}
+
+.mana-cancel {
+  min-height: 20px;
+  padding: 0 6px;
+  font-size: 10px;
 }
 
 .mana-chip b {

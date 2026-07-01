@@ -74,6 +74,7 @@ function startGame() {
     winner: null,
     busy: false,
     draggingAttack: null,
+    pendingPayment: null,
     suppressAttackClick: false,
     eventMessage: "",
     flashUids: [],
@@ -279,6 +280,16 @@ function handleBattlefieldClick(event) {
   const action = target.dataset.action;
   const uidValue = target.dataset.uid;
 
+  if (state.pendingPayment) {
+    if (action === "pay-mana") {
+      selectPaymentMana(uidValue);
+    }
+    if (action === "cancel-payment") {
+      cancelPayment();
+    }
+    return;
+  }
+
   if (action === "mana") {
     putMana(HUMAN, uidValue);
   }
@@ -296,7 +307,7 @@ function handleBattlefieldClick(event) {
 
 function handleAttackDragStart(event) {
   const card = event.target.closest("[data-drag-attack]");
-  if (!card || !canHumanAct()) return;
+  if (!card || !canHumanAct() || state.pendingPayment) return;
   state.draggingAttack = card.dataset.uid;
   event.dataTransfer.effectAllowed = "move";
   event.dataTransfer.setData("text/plain", card.dataset.uid);
@@ -675,20 +686,15 @@ function autoPayCost(player, card) {
 
 async function chooseManaPayment(player, card) {
   if (card.cost === 0) return [];
-  const selected = [];
-
-  while (selected.length < card.cost) {
-    const candidates = paymentCandidates(player, card, selected);
-    const choice = await chooseManaCard(
-      `${card.name} の支払いマナ ${selected.length + 1}/${card.cost}`,
-      candidates,
-      selected,
-    );
-    if (!choice) return null;
-    selected.push(choice);
-  }
-
-  return selected.some((manaCard) => manaCard.civilization === card.civilization) ? selected : null;
+  return new Promise((resolve) => {
+    state.pendingPayment = {
+      card,
+      selected: [],
+      resolve,
+    };
+    setEvent(`${card.name} の支払いマナをマナゾーンから選んでください。`, { zones: ["human-mana"] });
+    render();
+  });
 }
 
 function paymentCandidates(player, card, selected) {
@@ -699,6 +705,40 @@ function paymentCandidates(player, card, selected) {
     return untapped.filter((manaCard) => manaCard.civilization === card.civilization);
   }
   return untapped;
+}
+
+function selectPaymentMana(uidValue) {
+  const payment = state.pendingPayment;
+  if (!payment) return;
+  const player = state.players[HUMAN];
+  const candidates = paymentCandidates(player, payment.card, payment.selected);
+  const manaCard = candidates.find((card) => card.uid === uidValue);
+  if (!manaCard) return;
+
+  payment.selected.push(manaCard);
+
+  if (payment.selected.length >= payment.card.cost) {
+    const selected = [...payment.selected];
+    const resolve = payment.resolve;
+    state.pendingPayment = null;
+    resolve(selected);
+    return;
+  }
+
+  setEvent(`${payment.card.name} の支払いマナを選択中 ${payment.selected.length}/${payment.card.cost}。`, {
+    uids: payment.selected.map((card) => card.uid),
+    zones: ["human-mana"],
+  });
+  render();
+}
+
+function cancelPayment() {
+  const payment = state.pendingPayment;
+  if (!payment) return;
+  state.pendingPayment = null;
+  payment.resolve(null);
+  setEvent("マナ支払いをキャンセルしました。", { zones: ["human-mana"] });
+  render();
 }
 
 function canPayCost(player, card) {
@@ -758,9 +798,9 @@ function render() {
     : `ターン ${state.turn} / ${activePlayer.label} / ${phase()}フェーズ`;
 
   els.nextPhase.textContent = nextPhaseLabel();
-  els.nextPhase.disabled = !canHumanAct() || (phase() === "マナ" && !state.manaPlaced && state.players[HUMAN].hand.length > 0);
-  els.skipMana.disabled = !canHumanAct() || phase() !== "マナ" || state.manaPlaced;
-  els.endTurn.disabled = !canHumanAct();
+  els.nextPhase.disabled = !canHumanAct() || state.pendingPayment || (phase() === "マナ" && !state.manaPlaced && state.players[HUMAN].hand.length > 0);
+  els.skipMana.disabled = !canHumanAct() || state.pendingPayment || phase() !== "マナ" || state.manaPlaced;
+  els.endTurn.disabled = !canHumanAct() || state.pendingPayment;
 
   els.scoreboard.innerHTML = state.players.map(renderSummary).join("");
   els.battlefield.innerHTML = renderGameTable();
@@ -858,14 +898,34 @@ function renderShields(player, index) {
 }
 
 function renderMana(player, index) {
+  const payment = index === HUMAN ? state.pendingPayment : null;
   return `
     <div class="mana-zone ${zoneFlash(index === HUMAN ? "human-mana" : "cpu-mana")}">
       <strong>マナ ${availableMana(player)}/${player.mana.length}</strong>
       <div class="mana-row">
-        ${player.mana.map((card) => `<span class="mana-chip ${CIV_CLASS[card.civilization] || ""} ${card.tapped ? "tapped" : ""} ${cardFlash(card)}" title="${escapeHtml(card.name)}"><b>${escapeHtml(card.civilization)}</b>${escapeHtml(shortCardName(card.name))}</span>`).join("") || `<span class="mana-chip empty">0</span>`}
+        ${player.mana.map((card) => renderManaChip(card, payment)).join("") || `<span class="mana-chip empty">0</span>`}
+        ${payment ? `<button class="mana-cancel" data-action="cancel-payment" type="button">キャンセル</button>` : ""}
       </div>
     </div>
   `;
+}
+
+function renderManaChip(card, payment) {
+  const selected = payment?.selected.includes(card);
+  const payable = payment && paymentCandidates(state.players[HUMAN], payment.card, payment.selected).includes(card);
+  const classes = [
+    "mana-chip",
+    CIV_CLASS[card.civilization] || "",
+    card.tapped ? "tapped" : "",
+    selected ? "selected" : "",
+    payable ? "payable" : "",
+    cardFlash(card),
+  ].filter(Boolean).join(" ");
+  const content = `<b>${escapeHtml(card.civilization)}</b>${escapeHtml(shortCardName(card.name))}`;
+  if (payable) {
+    return `<button class="${classes}" data-action="pay-mana" data-uid="${card.uid}" type="button" title="${escapeHtml(card.name)}">${content}</button>`;
+  }
+  return `<span class="${classes}" title="${escapeHtml(card.name)}">${content}</span>`;
 }
 
 function shortCardName(name) {
@@ -873,7 +933,7 @@ function shortCardName(name) {
 }
 
 function renderCard(card, playerIndex, zone) {
-  const humanTurn = canHumanAct() && playerIndex === HUMAN;
+  const humanTurn = canHumanAct() && !state.pendingPayment && playerIndex === HUMAN;
   const playable = humanTurn && zone === "hand" && phase() === "メイン" && canPayCost(state.players[HUMAN], card);
   const canMana = humanTurn && zone === "hand" && phase() === "マナ" && !state.manaPlaced;
   const canAttack = humanTurn && zone === "battle" && canEnterAttackWith(card);
@@ -944,47 +1004,6 @@ function chooseCard(title, cards, optional = false) {
       ...(optional ? [{ label: "選ばない", uid: "" }] : []),
       ...cards.map((card) => ({
         label: `${card.name} / コスト${card.cost}${card.power ? ` / ${totalPower(card)}` : ""}`,
-        uid: card.uid,
-      })),
-    ].map((item) => `<button type="button" data-choice="${escapeHtml(item.uid)}">${escapeHtml(item.label)}</button>`).join("");
-
-    const handleChoice = (event) => {
-      const button = event.target.closest("[data-choice]");
-      if (!button) return;
-      cleanup();
-      els.dialog.close();
-      resolve(cards.find((card) => card.uid === button.dataset.choice) || null);
-    };
-    const handleClose = () => {
-      cleanup();
-      resolve(null);
-    };
-    const cleanup = () => {
-      els.choiceList.removeEventListener("click", handleChoice);
-      els.dialog.removeEventListener("close", handleClose);
-    };
-    els.choiceList.addEventListener("click", handleChoice);
-    els.dialog.addEventListener("close", handleClose, { once: true });
-    els.dialog.showModal();
-  });
-}
-
-function chooseManaCard(title, cards, selected) {
-  return new Promise((resolve) => {
-    if (cards.length === 0) {
-      setEvent(`${title}: 支払えるマナがありません。`);
-      resolve(null);
-      return;
-    }
-
-    const selectedText = selected.length
-      ? `選択済み: ${selected.map((card) => `${card.civilization}/${shortCardName(card.name)}`).join("、")}`
-      : "選択済み: なし";
-    els.choiceTitle.textContent = `${title} / ${selectedText}`;
-    els.choiceList.innerHTML = [
-      { label: "キャンセル", uid: "" },
-      ...cards.map((card) => ({
-        label: `${card.civilization} / ${card.name}`,
         uid: card.uid,
       })),
     ].map((item) => `<button type="button" data-choice="${escapeHtml(item.uid)}">${escapeHtml(item.label)}</button>`).join("");
