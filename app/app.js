@@ -884,7 +884,7 @@ function render() {
     : `ターン ${state.turn} / ${activePlayer.label} / ${phase()}フェーズ`;
 
   els.nextPhase.textContent = nextPhaseLabel();
-  els.autoPay.textContent = state.autoPay ? "✓ 自動支払い ON" : "自動支払い OFF";
+  els.autoPay.textContent = state.autoPay ? "✓ マナ自動支払い ON" : "マナ自動支払い OFF";
   els.autoPay.classList.toggle("active", state.autoPay);
   els.autoPay.setAttribute("aria-pressed", String(state.autoPay));
   els.autoPay.disabled = Boolean(state.pendingPayment);
