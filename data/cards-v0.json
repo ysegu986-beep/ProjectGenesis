@@ -218,7 +218,7 @@
       "civilization": "自然",
       "type": "クリーチャー",
       "cost": 1,
-      "power": 2000,
+      "power": 1000,
       "text": "効果なし",
       "role": "自然の軽量展開"
     },
