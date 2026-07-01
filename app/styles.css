@@ -17,10 +17,12 @@
 body {
   margin: 0;
   min-width: 320px;
+  height: 100vh;
+  overflow: hidden;
 }
 
 button {
-  min-height: 36px;
+  min-height: 30px;
   border: 1px solid #8e887b;
   border-radius: 6px;
   background: #fffaf0;
@@ -40,13 +42,15 @@ button:disabled {
 
 .app-shell {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  grid-template-rows: 52px 46px 58px minmax(0, 1fr);
   grid-template-areas:
     "topbar topbar"
     "guide log"
     "score log"
     "field log";
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .topbar {
@@ -55,7 +59,7 @@ button:disabled {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 16px 20px;
+  padding: 8px 14px;
   border-bottom: 1px solid #d8d0c2;
   background: #fff9ec;
 }
@@ -88,9 +92,9 @@ button:disabled {
   grid-area: guide;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  gap: 12px;
+  gap: 8px;
   align-items: center;
-  padding: 12px 16px 0;
+  padding: 6px 10px 0;
 }
 
 .phase-track {
@@ -100,7 +104,7 @@ button:disabled {
 
 .phase-pill {
   min-width: 76px;
-  padding: 8px 10px;
+  padding: 5px 8px;
   border: 1px solid #c6bba9;
   border-radius: 999px;
   background: #fffaf0;
@@ -117,10 +121,10 @@ button:disabled {
 }
 
 .current-guide {
-  min-height: 42px;
+  min-height: 34px;
   display: flex;
   align-items: center;
-  padding: 9px 12px;
+  padding: 6px 10px;
   border: 1px solid #d4cab8;
   border-radius: 8px;
   background: #fffaf0;
@@ -133,8 +137,8 @@ button:disabled {
   grid-area: score;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  padding: 12px 16px 0;
+  gap: 8px;
+  padding: 6px 10px 0;
 }
 
 .player-summary {
@@ -142,7 +146,7 @@ button:disabled {
   grid-template-columns: 1fr auto;
   gap: 8px;
   align-items: center;
-  padding: 12px;
+  padding: 7px 9px;
   border: 1px solid #d8d0c2;
   border-radius: 8px;
   background: #fffaf0;
@@ -155,18 +159,18 @@ button:disabled {
 
 .player-summary h2 {
   margin: 0;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .stats {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
+  gap: 4px;
+  margin-top: 5px;
 }
 
 .stat {
-  padding: 3px 7px;
+  padding: 2px 6px;
   border-radius: 999px;
   background: #eee2cf;
   font-size: 12px;
@@ -174,13 +178,18 @@ button:disabled {
 
 .battlefield {
   grid-area: field;
-  padding: 12px 16px 16px;
+  min-height: 0;
+  padding: 6px 10px 10px;
+  overflow: hidden;
 }
 
 .game-table {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 12px;
+  grid-template-rows: 58px minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+  gap: 8px;
 }
 
 .center-stack {
@@ -189,6 +198,9 @@ button:disabled {
 }
 
 .duel-area {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   border: 1px solid #c8bdab;
   border-radius: 8px;
   background: #fffaf0;
@@ -208,36 +220,36 @@ button:disabled {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
-  padding: 8px 10px;
+  gap: 8px;
+  padding: 5px 8px;
   border-bottom: 1px solid #ded2c0;
   background: #f2e7d5;
 }
 
 .duel-area-header h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: 14px;
 }
 
 .duel-area-header span {
   color: #61594d;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 700;
 }
 
 .zone-strip {
   display: grid;
-  grid-template-columns: 64px minmax(120px, 1fr) minmax(140px, 1.2fr) 64px;
-  gap: 6px;
-  padding: 8px 10px;
+  grid-template-columns: 48px minmax(96px, 1fr) minmax(110px, 1.2fr) 48px;
+  gap: 4px;
+  padding: 5px 7px;
   border-bottom: 1px solid #eadfce;
 }
 
 .pile,
 .shield-zone,
 .mana-zone {
-  min-height: 64px;
-  padding: 6px;
+  min-height: 48px;
+  padding: 4px;
   border: 1px solid #d6c8b6;
   border-radius: 8px;
   background: #fffdf8;
@@ -251,12 +263,12 @@ button:disabled {
 .pile strong,
 .shield-zone strong,
 .mana-zone strong {
-  font-size: 12px;
+  font-size: 10px;
   color: #4e473d;
 }
 
 .pile span {
-  font-size: 22px;
+  font-size: 16px;
   font-weight: 900;
 }
 
@@ -264,17 +276,17 @@ button:disabled {
 .mana-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 7px;
+  gap: 3px;
+  margin-top: 4px;
 }
 
 .shield {
-  min-width: 34px;
-  padding: 5px 7px;
+  min-width: 25px;
+  padding: 3px 4px;
   border-radius: 5px;
   background: #323027;
   color: #fff7e8;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 900;
   text-align: center;
 }
@@ -285,13 +297,13 @@ button:disabled {
 }
 
 .mana-chip {
-  max-width: 104px;
-  min-width: 48px;
-  padding: 5px 7px;
+  max-width: 76px;
+  min-width: 34px;
+  padding: 3px 5px;
   border: 1px solid #bfb29e;
   border-radius: 999px;
   background: #f5ebd8;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 900;
   text-align: center;
   overflow: hidden;
@@ -307,12 +319,17 @@ button:disabled {
 
 .battle-lane,
 .hand-lane {
-  padding: 8px 10px;
+  min-height: 0;
+  padding: 5px 7px;
 }
 
 .battle-lane {
-  min-height: 180px;
+  flex: 1 1 50%;
   border-bottom: 1px solid #eadfce;
+}
+
+.hand-lane {
+  flex: 1 1 50%;
 }
 
 .human .hand-lane {
@@ -321,14 +338,14 @@ button:disabled {
 
 .center-stack {
   display: grid;
-  grid-template-columns: minmax(180px, 320px) minmax(0, 1fr);
-  gap: 12px;
+  grid-template-columns: minmax(180px, 1fr) minmax(0, 1.4fr);
+  gap: 8px;
   align-items: stretch;
 }
 
 .event-banner {
   grid-column: 1 / -1;
-  padding: 12px 14px;
+  padding: 7px 10px;
   border: 1px solid #b9aa91;
   border-radius: 8px;
   background: #24211b;
@@ -339,7 +356,7 @@ button:disabled {
 
 .action-panel,
 .turn-note {
-  padding: 12px;
+  padding: 7px 9px;
   border: 1px solid #d6c8b6;
   border-radius: 8px;
   background: #fffaf0;
@@ -347,7 +364,7 @@ button:disabled {
 
 .action-panel {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   color: #61594d;
 }
 
@@ -373,7 +390,7 @@ button:disabled {
   align-items: center;
   color: #362f26;
   font-weight: 700;
-  line-height: 1.5;
+  line-height: 1.35;
 }
 
 .player-board {
@@ -421,24 +438,24 @@ button:disabled {
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   color: #4e473d;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 700;
 }
 
 .card-row {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(98px, 1fr));
+  gap: 5px;
 }
 
 .card {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  min-height: 170px;
-  padding: 6px;
+  gap: 3px;
+  min-height: 128px;
+  padding: 4px;
   border: 2px solid #5d564b;
   border-radius: 8px;
   background: #fffaf0;
@@ -501,7 +518,7 @@ button:disabled {
 
 .card-visual {
   position: relative;
-  min-height: 52px;
+  min-height: 34px;
   border-radius: 6px;
   border: 1px solid rgba(0, 0, 0, 0.22);
   overflow: hidden;
@@ -538,15 +555,15 @@ button:disabled {
   position: absolute;
   top: 6px;
   left: 6px;
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
   display: grid;
   place-items: center;
   border: 2px solid rgba(255, 255, 255, 0.84);
   border-radius: 50%;
   background: rgba(23, 24, 18, 0.82);
   color: #fff;
-  font-size: 15px;
+  font-size: 12px;
   font-weight: 900;
 }
 
@@ -554,11 +571,11 @@ button:disabled {
   position: absolute;
   right: 6px;
   bottom: 6px;
-  padding: 3px 7px;
+  padding: 2px 5px;
   border-radius: 999px;
   background: rgba(255, 250, 240, 0.9);
   color: #29231d;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 800;
 }
 
@@ -567,18 +584,18 @@ button:disabled {
   position: absolute;
   right: 6px;
   top: 6px;
-  min-width: 44px;
-  padding: 4px 6px;
+  min-width: 34px;
+  padding: 2px 4px;
   border-radius: 6px;
   background: rgba(255, 250, 240, 0.94);
   color: #211d18;
-  font-size: 11px;
+  font-size: 9px;
   font-weight: 900;
   text-align: center;
 }
 
 .card-back {
-  min-height: 58px;
+  min-height: 42px;
   display: grid;
   place-items: center;
   border: 1px dashed #a79f92;
@@ -590,25 +607,25 @@ button:disabled {
 }
 
 .card-name {
-  min-height: 30px;
-  font-size: 13px;
+  min-height: 18px;
+  font-size: 11px;
   font-weight: 800;
   line-height: 1.2;
 }
 
 .card-status {
-  min-height: 18px;
+  min-height: 14px;
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
 }
 
 .card-status span {
-  padding: 2px 6px;
+  padding: 1px 4px;
   border-radius: 999px;
   background: #2f6b72;
   color: #fff;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 800;
 }
 
@@ -644,9 +661,9 @@ button:disabled {
 .card-text {
   flex: 1;
   color: #3b352d;
-  font-size: 11px;
-  line-height: 1.35;
-  padding: 5px;
+  font-size: 10px;
+  line-height: 1.25;
+  padding: 3px;
   border: 1px solid #ded2c0;
   border-radius: 6px;
   background: #fffdf8;
@@ -654,14 +671,14 @@ button:disabled {
 
 .card-actions {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(54px, 1fr));
-  gap: 5px;
+  grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
+  gap: 3px;
 }
 
 .card-actions button {
-  min-height: 28px;
+  min-height: 23px;
   padding: 0 4px;
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .compact-zone {
@@ -689,7 +706,7 @@ button:disabled {
 }
 
 .empty-zone {
-  min-height: 82px;
+  min-height: 40px;
   display: grid;
   place-items: center;
   border: 1px dashed #cabda9;
@@ -703,6 +720,7 @@ button:disabled {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  overflow: hidden;
   border-left: 1px solid #d8d0c2;
   background: #fffaf0;
 }
@@ -727,13 +745,13 @@ button:disabled {
 }
 
 #game-log {
-  min-height: 124px;
-  max-height: 124px;
+  min-height: 104px;
+  max-height: 104px;
   margin: 0;
-  padding: 10px 10px 10px 30px;
+  padding: 8px 8px 8px 26px;
   overflow: hidden;
-  font-size: 13px;
-  line-height: 1.45;
+  font-size: 12px;
+  line-height: 1.35;
 }
 
 #game-log li {

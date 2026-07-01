@@ -282,8 +282,8 @@ function handleBattlefieldClick(event) {
     playCard(HUMAN, uidValue);
   }
   if (action === "select-attacker") {
-    state.selectedAttacker = uidValue;
-    addLog("攻撃対象を選んでください。");
+    performAttack(HUMAN, uidValue, "player");
+    state.selectedAttacker = null;
     render();
   }
   if (action === "attack-player") {
@@ -336,7 +336,7 @@ function cpuPutMana() {
 async function cpuPlayOneCard() {
   const cpu = state.players[CPU];
   const playable = cpu.hand
-    .filter((card) => availableMana(cpu) >= card.cost)
+    .filter((card) => canPayCost(cpu, card))
     .sort((a, b) => {
       if (a.type !== b.type) return a.type === "クリーチャー" ? -1 : 1;
       return b.cost - a.cost;
@@ -350,8 +350,8 @@ async function playCard(playerIndex, uidValue) {
   const player = state.players[playerIndex];
   if (phase() !== "メイン") return false;
   const card = player.hand.find((candidate) => candidate.uid === uidValue);
-  if (!card || availableMana(player) < card.cost) return false;
-  payCost(player, card.cost);
+  if (!card || !canPayCost(player, card)) return false;
+  payCost(player, card);
   removeByUid(player.hand, uidValue);
 
   if (card.type === "クリーチャー") {
@@ -613,11 +613,27 @@ function availableMana(player) {
   return player.mana.filter((card) => !card.tapped).length;
 }
 
-function payCost(player, cost) {
-  const readyMana = player.mana.filter((card) => !card.tapped).slice(0, cost);
-  readyMana.forEach((card) => {
+function payCost(player, card) {
+  const matchingMana = player.mana.find((manaCard) => !manaCard.tapped && manaCard.civilization === card.civilization);
+  const paid = [];
+  if (matchingMana) paid.push(matchingMana);
+
+  for (const manaCard of player.mana) {
+    if (paid.length >= card.cost) break;
+    if (!manaCard.tapped && !paid.includes(manaCard)) paid.push(manaCard);
+  }
+
+  paid.forEach((card) => {
     card.tapped = true;
   });
+}
+
+function canPayCost(player, card) {
+  return availableMana(player) >= card.cost && hasCivilizationMana(player, card.civilization);
+}
+
+function hasCivilizationMana(player, civilization) {
+  return player.mana.some((card) => !card.tapped && card.civilization === civilization);
 }
 
 function totalPower(card) {
@@ -701,9 +717,8 @@ function guideText() {
       ? "光っているカードを召喚/詠唱できます。終わったら「アタックへ」。"
       : "今使えるカードはありません。「アタックへ」で進めます。";
   }
-  if (state.selectedAttacker) return "攻撃対象を選んでください。まずはプレイヤー攻撃で大丈夫です。";
   return humanAttackers().length > 0
-    ? "攻撃できるクリーチャーを選んでください。出したばかりのクリーチャーは攻撃できません。"
+    ? "攻撃ボタンで相手プレイヤーへ攻撃します。アタックに入ったら召喚やマナ置きはできません。"
     : "攻撃できるクリーチャーはいません。「ターン終了」でCPUに渡します。";
 }
 
@@ -807,24 +822,12 @@ function renderMana(player, index) {
 }
 
 function renderAttackPanel() {
-  if (phase() !== "アタック" || !state.selectedAttacker || !canHumanAct()) {
-    return `<div class="action-panel">ここに攻撃対象が表示されます。</div>`;
-  }
-  const cpu = state.players[CPU];
-  const tappedCreatures = cpu.battle.filter((card) => card.tapped);
-  return `
-    <div class="action-panel active">
-      <strong>攻撃対象</strong>
-      <button data-action="attack-player">CPUプレイヤーを攻撃</button>
-      ${tappedCreatures.map((card) => `<button data-action="attack-creature" data-uid="${card.uid}">${escapeHtml(card.name)} を攻撃</button>`).join("")}
-      <button data-action="cancel-attack">キャンセル</button>
-    </div>
-  `;
+  return `<div class="action-panel">アタックフェーズでは、攻撃ボタンがそのまま相手プレイヤーへの攻撃になります。</div>`;
 }
 
 function renderCard(card, playerIndex, zone) {
   const humanTurn = canHumanAct() && playerIndex === HUMAN;
-  const playable = humanTurn && zone === "hand" && phase() === "メイン" && availableMana(state.players[HUMAN]) >= card.cost;
+  const playable = humanTurn && zone === "hand" && phase() === "メイン" && canPayCost(state.players[HUMAN], card);
   const canMana = humanTurn && zone === "hand" && phase() === "マナ" && !state.manaPlaced;
   const canAttack = humanTurn && zone === "battle" && phase() === "アタック" && !card.tapped && !card.asleep;
   const selected = state.selectedAttacker === card.uid;
@@ -857,8 +860,11 @@ function renderCard(card, playerIndex, zone) {
 
 function cardReason(card, playerIndex, zone) {
   if (!canHumanAct() || playerIndex !== HUMAN) return "";
-  if (zone === "hand" && phase() === "メイン" && availableMana(state.players[HUMAN]) < card.cost) {
-    return `マナ不足 ${availableMana(state.players[HUMAN])}/${card.cost}`;
+  if (zone === "hand" && phase() === "メイン" && !canPayCost(state.players[HUMAN], card)) {
+    if (availableMana(state.players[HUMAN]) < card.cost) {
+      return `マナ不足 ${availableMana(state.players[HUMAN])}/${card.cost}`;
+    }
+    return `${card.civilization}マナなし`;
   }
   if (zone === "hand" && phase() === "マナ" && state.manaPlaced) return "マナ済み";
   if (zone === "battle" && phase() === "アタック") {
@@ -915,7 +921,7 @@ function chooseCard(title, cards, optional = false) {
 
 function humanPlayableCards() {
   const player = state.players[HUMAN];
-  return player.hand.filter((card) => availableMana(player) >= card.cost);
+  return player.hand.filter((card) => canPayCost(player, card));
 }
 
 function humanAttackers() {
