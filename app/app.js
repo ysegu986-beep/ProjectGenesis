@@ -181,18 +181,19 @@ function beginHumanTurn() {
   state.active = HUMAN;
   state.phaseIndex = 0;
   state.manaPlaced = false;
-  startTurn(state.players[HUMAN]);
+  startTurn(state.players[HUMAN], { draw: state.turn !== 1 });
   setEvent("あなたのターン。手札から1枚マナに置こう。", { zones: ["human-hand"] });
   render();
 }
 
-function startTurn(player) {
+function startTurn(player, options = {}) {
+  const shouldDraw = options.draw !== false;
   for (const card of [...player.mana, ...player.battle]) {
     card.tapped = false;
     card.asleep = false;
     card.tempPower = 0;
   }
-  drawOne(player);
+  if (shouldDraw) drawOne(player);
 }
 
 function phase() {
@@ -680,6 +681,14 @@ function chooseCpuDiscard(player, opponent) {
     .sort((a, b) => a.score - b.score)[0]?.card || null;
 }
 
+function cpuBestManaRecovery(cards) {
+  const cpu = state.players[CPU];
+  const opponent = state.players[HUMAN];
+  return [...cards]
+    .map((card) => ({ card, score: cpuKeepScore(card, cpu, opponent) + cpuThreatScore(card) }))
+    .sort((a, b) => b.score - a.score)[0]?.card || null;
+}
+
 function cpuKeepScore(card, player, opponent) {
   let score = card.cost;
   if (canPayCost(player, card)) score += 8;
@@ -700,6 +709,7 @@ function drawAmount(card) {
 }
 
 function fireSpellDestroyLimit(card) {
+  if (card.id === "FS-005") return 4000;
   return card.id === "FS-004" ? 5000 : 3000;
 }
 
@@ -708,6 +718,7 @@ function fireCreatureDestroyLimit(card) {
 }
 
 function bounceCreatureCostLimit(card) {
+  if (card.id === "W-010") return 4;
   return card.id === "W-009" ? 3 : 2;
 }
 
@@ -808,7 +819,7 @@ async function resolveEnterEffect(playerIndex, card) {
       setEvent(`${player.label} は ${discard.name} を捨てた。`, { zones: [isHuman ? "human-grave" : "cpu-grave"] });
     }
   }
-  if (["W-003", "W-009"].includes(card.id)) {
+  if (["W-003", "W-009", "W-010"].includes(card.id)) {
     const candidates = opponent.battle.filter((item) => item.cost <= bounceCreatureCostLimit(card));
     const target = isHuman
       ? await chooseCard("手札に戻す相手クリーチャー", candidates, true)
@@ -825,7 +836,7 @@ async function resolveEnterEffect(playerIndex, card) {
   if (card.id === "W-006") {
     drawOne(player);
   }
-  if (["L-003", "L-006"].includes(card.id)) {
+  if (["L-003", "L-006", "L-010"].includes(card.id)) {
     const candidates = opponent.battle.filter((item) => !item.tapped);
     const target = isHuman
       ? await chooseCard("タップする相手クリーチャー", candidates, true)
@@ -851,7 +862,7 @@ async function resolveSpell(playerIndex, card) {
   const opponent = state.players[1 - playerIndex];
   const isHuman = playerIndex === HUMAN;
 
-  if (["FS-001", "FS-004"].includes(card.id)) {
+  if (["FS-001", "FS-004", "FS-005"].includes(card.id)) {
     const candidates = opponent.battle.filter((item) => totalPower(item) <= fireSpellDestroyLimit(card));
     const target = isHuman
       ? await chooseCard("破壊する相手クリーチャー", candidates, false)
@@ -887,6 +898,20 @@ async function resolveSpell(playerIndex, card) {
       drawOne(player);
     }
   }
+  if (card.id === "NS-004") {
+    const candidates = player.mana.filter((item) => item.type === "クリーチャー");
+    const target = isHuman
+      ? await chooseCard("マナから手札に戻すクリーチャー", candidates, false)
+      : cpuBestManaRecovery(candidates);
+    if (target) {
+      removeByUid(player.mana, target.uid);
+      player.hand.push(target);
+      setEvent(`${player.label} は ${target.name} をマナから手札に戻した。`, {
+        uids: [target.uid],
+        zones: [isHuman ? "human-hand" : "cpu-hand"],
+      });
+    }
+  }
   if (card.id === "WS-001") {
     drawOne(player);
     drawOne(player);
@@ -902,6 +927,19 @@ async function resolveSpell(playerIndex, card) {
   if (card.id === "WS-003") {
     drawOne(player);
     drawOne(player);
+  }
+  if (card.id === "WS-004") {
+    drawOne(player);
+    drawOne(player);
+    drawOne(player);
+    const discard = isHuman
+      ? await chooseCard("捨てる手札", player.hand, false)
+      : chooseCpuDiscard(player, opponent);
+    if (discard) {
+      removeByUid(player.hand, discard.uid);
+      player.grave.push(discard);
+      setEvent(`${player.label} は ${discard.name} を捨てた。`, { zones: [isHuman ? "human-grave" : "cpu-grave"] });
+    }
   }
   if (card.id === "WS-002") {
     const candidates = opponent.battle.filter((item) => item.cost <= 4);
@@ -961,6 +999,16 @@ async function resolveSpell(playerIndex, card) {
       target.tapped = true;
       setEvent(`${target.name} をタップした。`, { uids: [target.uid] });
     }
+  }
+  if (card.id === "LS-005") {
+    const top = player.deck.shift();
+    if (top) {
+      player.shields.push(top);
+      setEvent(`${player.label} は山札の上から1枚をシールドに置いた。`, {
+        zones: [isHuman ? "human-shields" : "cpu-shields"],
+      });
+    }
+    drawOne(player);
   }
   if (card.id === "FS-003") {
     for (const creature of player.battle) {
