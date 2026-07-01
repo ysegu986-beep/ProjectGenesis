@@ -266,7 +266,7 @@ async function runCpuTurn() {
   for (const creature of [...state.players[CPU].battle]) {
     if (state.winner) break;
     if (!creature.tapped && !creature.asleep) {
-      performAttack(CPU, creature.uid, "player");
+      await performAttack(CPU, creature.uid, "player");
       render();
       await pause(500);
     }
@@ -292,7 +292,7 @@ function toggleAutoPay() {
   render();
 }
 
-function handleBattlefieldClick(event) {
+async function handleBattlefieldClick(event) {
   const target = event.target.closest("[data-action]");
   if (!target || !canHumanAct()) return;
   if (state.suppressAttackClick) {
@@ -324,7 +324,7 @@ function handleBattlefieldClick(event) {
     if (phase() === "メイン") {
       state.phaseIndex = 2;
     }
-    performAttack(HUMAN, uidValue, "player");
+    await performAttack(HUMAN, uidValue, "player");
     render();
   }
 }
@@ -345,7 +345,7 @@ function handleAttackDragOver(event) {
   event.dataTransfer.dropEffect = "move";
 }
 
-function handleAttackDrop(event) {
+async function handleAttackDrop(event) {
   if (!state?.draggingAttack || !canHumanAct()) return;
   const target = event.target.closest("[data-drop-target]");
   if (!target) return;
@@ -356,7 +356,7 @@ function handleAttackDrop(event) {
   if (phase() === "メイン") {
     state.phaseIndex = 2;
   }
-  performAttack(HUMAN, attackerUid, targetUid);
+  await performAttack(HUMAN, attackerUid, targetUid);
   state.draggingAttack = null;
   state.suppressAttackClick = true;
   render();
@@ -612,7 +612,7 @@ async function resolveSpell(playerIndex, card) {
   }
 }
 
-function performAttack(attackerIndex, attackerUid, targetUid) {
+async function performAttack(attackerIndex, attackerUid, targetUid) {
   const attackerOwner = state.players[attackerIndex];
   const defenderOwner = state.players[1 - attackerIndex];
   const attacker = attackerOwner.battle.find((card) => card.uid === attackerUid);
@@ -621,7 +621,7 @@ function performAttack(attackerIndex, attackerUid, targetUid) {
   attacker.tapped = true;
 
   if (targetUid === "player") {
-    const blocker = defenderOwner.battle.find((card) => card.text.includes("ブロッカー") && !card.tapped);
+    const blocker = await chooseBlocker(attackerIndex, attacker);
     if (blocker) {
       blocker.tapped = true;
       setEvent(`${defenderOwner.label} の ${blocker.name} がブロック。`, { uids: [blocker.uid, attacker.uid] });
@@ -636,6 +636,17 @@ function performAttack(attackerIndex, attackerUid, targetUid) {
   if (defender) {
     battleCreatures(attackerIndex, attacker, 1 - attackerIndex, defender);
   }
+}
+
+async function chooseBlocker(attackerIndex, attacker) {
+  const defenderIndex = 1 - attackerIndex;
+  const defenderOwner = state.players[defenderIndex];
+  const blockers = defenderOwner.battle.filter((card) => card.text.includes("ブロッカー") && !card.tapped);
+  if (blockers.length === 0) return null;
+  if (defenderIndex === HUMAN) {
+    return chooseCard(`${attacker.name} をブロックする？`, blockers, true);
+  }
+  return blockers[0];
 }
 
 function attackPlayer(attackerIndex, attacker) {
