@@ -736,6 +736,7 @@ function darkCreatureDestroyLimit(card) {
 }
 
 function darkSpellDestroyLimit(card) {
+  if (card.id === "DS-001") return 2000;
   return card.id === "DS-004" ? 5000 : 3000;
 }
 
