@@ -20,6 +20,7 @@ const els = {
   battlefield: document.querySelector("#battlefield"),
   fullLog: document.querySelector("#full-game-log"),
   newGame: document.querySelector("#new-game"),
+  autoPay: document.querySelector("#auto-pay"),
   skipMana: document.querySelector("#skip-mana"),
   nextPhase: document.querySelector("#next-phase"),
   endTurn: document.querySelector("#end-turn"),
@@ -42,6 +43,7 @@ async function init() {
   deckDefs = (await decksRes.json()).decks;
 
   els.newGame.addEventListener("click", startGame);
+  els.autoPay.addEventListener("click", toggleAutoPay);
   els.skipMana.addEventListener("click", skipMana);
   els.nextPhase.addEventListener("click", nextPhase);
   els.endTurn.addEventListener("click", endHumanTurn);
@@ -72,6 +74,7 @@ function startGame() {
     phaseIndex: 0,
     manaPlaced: false,
     winner: null,
+    autoPay: false,
     busy: false,
     draggingAttack: null,
     pendingPayment: null,
@@ -266,6 +269,12 @@ async function runCpuTurn() {
 
 function canHumanAct() {
   return state && !state.winner && !state.busy && state.active === HUMAN;
+}
+
+function toggleAutoPay() {
+  if (!state || state.pendingPayment) return;
+  state.autoPay = !state.autoPay;
+  render();
 }
 
 function handleBattlefieldClick(event) {
@@ -657,6 +666,10 @@ function availableMana(player) {
 async function payCost(playerIndex, card) {
   const player = state.players[playerIndex];
   if (playerIndex === HUMAN) {
+    if (state.autoPay) {
+      autoPayCost(player, card);
+      return true;
+    }
     const selected = await chooseManaPayment(player, card);
     if (!selected) return false;
     selected.forEach((manaCard) => {
@@ -798,6 +811,10 @@ function render() {
     : `ターン ${state.turn} / ${activePlayer.label} / ${phase()}フェーズ`;
 
   els.nextPhase.textContent = nextPhaseLabel();
+  els.autoPay.textContent = state.autoPay ? "✓ 自動支払い ON" : "自動支払い OFF";
+  els.autoPay.classList.toggle("active", state.autoPay);
+  els.autoPay.setAttribute("aria-pressed", String(state.autoPay));
+  els.autoPay.disabled = Boolean(state.pendingPayment);
   els.nextPhase.disabled = !canHumanAct() || state.pendingPayment || (phase() === "マナ" && !state.manaPlaced && state.players[HUMAN].hand.length > 0);
   els.skipMana.disabled = !canHumanAct() || state.pendingPayment || phase() !== "マナ" || state.manaPlaced;
   els.endTurn.disabled = !canHumanAct() || state.pendingPayment;
@@ -842,7 +859,18 @@ function renderGameTable() {
     <section class="game-table">
       ${renderPlayerArea(state.players[CPU], CPU, true)}
       ${renderPlayerArea(state.players[HUMAN], HUMAN, false)}
+      ${state.winner ? renderResultOverlay() : ""}
     </section>
+  `;
+}
+
+function renderResultOverlay() {
+  const won = state.winner === state.players[HUMAN].label;
+  return `
+    <div class="result-overlay ${won ? "win" : "lose"}">
+      <strong>${won ? "勝利" : "敗北"}</strong>
+      <span>${escapeHtml(state.winner)} の勝ち</span>
+    </div>
   `;
 }
 
