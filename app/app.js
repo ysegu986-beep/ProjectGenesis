@@ -266,13 +266,22 @@ async function runCpuTurn() {
   render();
   await pause(300);
 
+  let cpuAttacked = false;
   for (const creature of [...state.players[CPU].battle]) {
     if (state.winner) break;
     if (!creature.tapped && !creature.asleep) {
-      await performAttack(CPU, creature.uid, chooseCpuAttackTarget(creature));
+      const target = chooseCpuAttackTarget(creature);
+      if (!target) continue;
+      await performAttack(CPU, creature.uid, target);
+      cpuAttacked = true;
       render();
       await pause(500);
     }
+  }
+  if (!state.winner && !cpuAttacked) {
+    setEvent("CPUは攻撃を見送った。", { zones: ["cpu-battle"] });
+    render();
+    await pause(250);
   }
 
   state.busy = false;
@@ -513,15 +522,24 @@ function canPayCostWithMana(mana, card) {
 function chooseCpuAttackTarget(attacker) {
   const human = state.players[HUMAN];
   const cpu = state.players[CPU];
-  if (human.shields.length === 0) return "player";
-
   const breaks = attacker.text.includes("Wブレイカー") ? 2 : 1;
   const canPressureLethal = human.shields.length <= breaks;
-  const humanCanBlock = human.battle.some((card) => card.text.includes("ブロッカー") && !card.tapped);
-  if (canPressureLethal || (!humanCanBlock && cpu.battle.length >= human.shields.length)) {
+  const hasFollowUpPressure = cpu.battle.filter((card) => !card.tapped && !card.asleep).length >= human.shields.length;
+  const directScore = cpuDirectAttackScore(attacker);
+  if (human.shields.length === 0 && directScore > 0) return "player";
+  if (canPressureLethal && directScore > 0) {
     return "player";
   }
 
+  const creatureTarget = chooseCpuCreatureAttackTarget(attacker);
+  if (creatureTarget) return creatureTarget.uid;
+
+  if (hasFollowUpPressure && directScore > 0) return "player";
+  return directScore >= 8 ? "player" : null;
+}
+
+function chooseCpuCreatureAttackTarget(attacker) {
+  const human = state.players[HUMAN];
   const attackableCreatures = human.battle
     .filter((card) => card.tapped)
     .map((card) => ({ card, score: cpuAttackCreatureScore(attacker, card) }))
@@ -529,10 +547,51 @@ function chooseCpuAttackTarget(attacker) {
     .sort((a, b) => b.score - a.score);
 
   if (attackableCreatures.length > 0) {
-    return attackableCreatures[0].card.uid;
+    return attackableCreatures[0].card;
   }
 
-  return "player";
+  return null;
+}
+
+function cpuDirectAttackScore(attacker) {
+  const human = state.players[HUMAN];
+  const breaks = attacker.text.includes("Wブレイカー") ? 2 : 1;
+  let score = breaks * 8;
+  if (human.shields.length === 0) score += 40;
+  if (human.shields.length <= breaks) score += 20;
+  if (human.shields.length <= breaks + 1) score += 8;
+
+  const blocker = cpuExpectedHumanBlocker(attacker);
+  if (!blocker) return score;
+
+  const attackerPower = battlePower(attacker, true);
+  const blockerPower = totalPower(blocker);
+  const blockerValue = cpuThreatScore(blocker);
+  if (attackerPower > blockerPower) {
+    score += Math.max(4, Math.floor(blockerValue / 3));
+  } else if (attackerPower === blockerPower) {
+    score -= Math.max(14, cpuThreatScore(attacker) - Math.floor(blockerValue / 2));
+  } else {
+    score -= 45 + Math.max(0, cpuThreatScore(attacker) - blockerValue);
+  }
+
+  return score;
+}
+
+function cpuExpectedHumanBlocker(attacker) {
+  return availableBlockers(state.players[HUMAN])
+    .map((blocker) => ({ blocker, score: cpuHumanBlockerRiskScore(attacker, blocker) }))
+    .sort((a, b) => b.score - a.score)[0]?.blocker || null;
+}
+
+function cpuHumanBlockerRiskScore(attacker, blocker) {
+  const attackerPower = battlePower(attacker, true);
+  const blockerPower = totalPower(blocker);
+  let score = cpuThreatScore(attacker) - Math.floor(cpuThreatScore(blocker) / 2);
+  if (blockerPower > attackerPower) score += 40;
+  if (blockerPower === attackerPower) score += 25;
+  if (blockerPower < attackerPower) score -= 12;
+  return score;
 }
 
 function cpuAttackCreatureScore(attacker, defender) {
@@ -896,12 +955,44 @@ async function performAttack(attackerIndex, attackerUid, targetUid) {
 async function chooseBlocker(attackerIndex, attacker) {
   const defenderIndex = 1 - attackerIndex;
   const defenderOwner = state.players[defenderIndex];
-  const blockers = defenderOwner.battle.filter((card) => card.text.includes("ブロッカー") && !card.tapped);
+  const blockers = availableBlockers(defenderOwner);
   if (blockers.length === 0) return null;
   if (defenderIndex === HUMAN) {
     return chooseBlockerCard(attacker, blockers);
   }
-  return blockers[0];
+  return chooseCpuBlocker(attacker, blockers);
+}
+
+function availableBlockers(player) {
+  return player.battle.filter((card) => card.text.includes("ブロッカー") && !card.tapped);
+}
+
+function chooseCpuBlocker(attacker, blockers) {
+  const defender = state.players[CPU];
+  const breaks = attacker.text.includes("Wブレイカー") ? 2 : 1;
+  const urgentDefense = defender.shields.length === 0 || defender.shields.length <= breaks;
+  const best = blockers
+    .map((blocker) => ({ blocker, score: cpuBlockerScore(attacker, blocker, urgentDefense) }))
+    .sort((a, b) => b.score - a.score)[0];
+
+  if (!best) return null;
+  return best.score > 0 || urgentDefense ? best.blocker : null;
+}
+
+function cpuBlockerScore(attacker, blocker, urgentDefense) {
+  const attackerPower = battlePower(attacker, true);
+  const blockerPower = totalPower(blocker);
+  const attackerValue = cpuThreatScore(attacker);
+  const blockerValue = cpuThreatScore(blocker);
+  let score = urgentDefense ? 30 : 0;
+
+  if (blockerPower > attackerPower) score += 24 + Math.floor(attackerValue / 2);
+  if (blockerPower === attackerPower) score += 10 + attackerValue - Math.floor(blockerValue / 2);
+  if (blockerPower < attackerPower) score -= 20 + blockerValue;
+  if (attacker.text.includes("Wブレイカー")) score += 10;
+  if (attacker.text.includes("スピードアタッカー")) score += 4;
+
+  return score;
 }
 
 function attackPlayer(attackerIndex, attacker) {
