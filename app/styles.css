@@ -697,23 +697,6 @@ button.mana-chip {
   font-weight: 900;
 }
 
-.blocker-mark {
-  position: absolute;
-  left: 4px;
-  bottom: 4px;
-  width: 18px;
-  height: 18px;
-  display: grid;
-  place-items: center;
-  border: 2px solid rgba(255, 255, 255, 0.9);
-  border-radius: 50%;
-  background: #1d8dff;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 900;
-  box-shadow: 0 1px 4px rgba(10, 40, 80, 0.35);
-}
-
 .card-type {
   position: absolute;
   right: 4px;
@@ -778,6 +761,19 @@ button.mana-chip {
   color: #fff;
   font-size: 9px;
   font-weight: 800;
+}
+
+.card-status .blocker-status {
+  width: 16px;
+  height: 16px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  background: #1d8dff;
+  color: #fff;
+  font-size: 10px;
 }
 
 .card-meta {

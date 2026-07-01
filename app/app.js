@@ -1034,18 +1034,18 @@ function renderCard(card, playerIndex, zone) {
     <article class="card ${canAttack ? "attackable" : ""} ${canDropAttack ? "drop-creature" : ""} ${card.tapped ? "tapped" : ""} ${card.asleep ? "asleep" : ""} ${playable || canMana || canAttack ? "ready" : ""} ${cardFlash(card)}" ${canAttack ? `${canDirectAttack ? `data-action="select-attacker"` : ""} data-drag-attack="true" draggable="true" data-uid="${card.uid}"` : ""} ${canDropAttack ? `data-drop-target="creature" data-uid="${card.uid}"` : ""}>
       <div class="card-visual ${CIV_CLASS[card.civilization] || ""}">
         <div class="cost-orb">${card.cost}</div>
-        ${card.text.includes("ブロッカー") ? `<div class="blocker-mark" title="ブロッカー">B</div>` : ""}
         <div class="card-type">${escapeHtml(card.civilization)} / ${escapeHtml(card.type)}</div>
         ${card.type === "クリーチャー" ? `<div class="power-box">${totalPower(card)}</div>` : `<div class="spell-mark">SPELL</div>`}
       </div>
       <div class="card-name">${escapeHtml(card.name)}</div>
       <div class="card-status">
+        ${card.text.includes("ブロッカー") ? `<span class="blocker-status" title="ブロッカー">B</span>` : ""}
         ${card.asleep ? `<span>召喚酔い</span>` : ""}
         ${card.tapped ? `<span>タップ済み</span>` : ""}
         ${canAttack ? `<span>攻撃可能</span>` : ""}
         ${reason ? `<span>${escapeHtml(reason)}</span>` : ""}
       </div>
-      <div class="card-text">${escapeHtml(card.text)}</div>
+      <div class="card-text">${escapeHtml(displayCardText(card))}</div>
       <div class="card-actions">
         ${zone === "hand" ? `<button data-action="mana" data-uid="${card.uid}" ${canMana ? "" : "disabled"}>マナへ</button>` : ""}
         ${zone === "hand" ? `<button data-action="play" data-uid="${card.uid}" ${playable ? "" : "disabled"}>${card.type === "呪文" ? "詠唱" : "召喚"}</button>` : ""}
@@ -1053,6 +1053,13 @@ function renderCard(card, playerIndex, zone) {
       </div>
     </article>
   `;
+}
+
+function displayCardText(card) {
+  return String(card.text || "")
+    .replace("ブロッカー。", "")
+    .replace("ブロッカー", "")
+    .trim() || "効果なし";
 }
 
 function canEnterAttackWith(card) {
