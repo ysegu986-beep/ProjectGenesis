@@ -7,16 +7,22 @@
       "goal": "早い攻撃とマナ加速で、相手にシールド判断を迫る。",
       "cards": [
         { "id": "F-001", "count": 4 },
-        { "id": "F-002", "count": 4 },
-        { "id": "F-003", "count": 4 },
-        { "id": "F-004", "count": 3 },
-        { "id": "F-005", "count": 2 },
+        { "id": "F-002", "count": 3 },
+        { "id": "F-003", "count": 3 },
+        { "id": "F-004", "count": 2 },
+        { "id": "F-005", "count": 1 },
+        { "id": "F-006", "count": 3 },
+        { "id": "F-007", "count": 1 },
         { "id": "N-001", "count": 4 },
-        { "id": "N-002", "count": 4 },
-        { "id": "N-003", "count": 3 },
-        { "id": "FS-001", "count": 4 },
-        { "id": "FS-002", "count": 4 },
-        { "id": "NS-001", "count": 4 }
+        { "id": "N-002", "count": 3 },
+        { "id": "N-003", "count": 2 },
+        { "id": "N-004", "count": 3 },
+        { "id": "N-005", "count": 1 },
+        { "id": "FS-001", "count": 3 },
+        { "id": "FS-002", "count": 2 },
+        { "id": "FS-003", "count": 2 },
+        { "id": "NS-001", "count": 2 },
+        { "id": "NS-002", "count": 1 }
       ]
     },
     {
@@ -24,20 +30,25 @@
       "name": "水光コントロール",
       "goal": "守りながら手札を整え、相手の攻撃テンポを崩してから反撃する。",
       "cards": [
-        { "id": "W-001", "count": 4 },
-        { "id": "W-002", "count": 4 },
+        { "id": "W-001", "count": 2 },
+        { "id": "W-002", "count": 3 },
         { "id": "W-003", "count": 3 },
-        { "id": "W-004", "count": 3 },
-        { "id": "W-005", "count": 2 },
-        { "id": "L-001", "count": 4 },
-        { "id": "L-002", "count": 4 },
+        { "id": "W-004", "count": 2 },
+        { "id": "W-005", "count": 1 },
+        { "id": "W-006", "count": 3 },
+        { "id": "W-007", "count": 1 },
+        { "id": "L-001", "count": 3 },
+        { "id": "L-002", "count": 3 },
         { "id": "L-003", "count": 3 },
-        { "id": "L-004", "count": 3 },
-        { "id": "WS-001", "count": 4 },
-        { "id": "LS-001", "count": 4 },
-        { "id": "LS-002", "count": 2 }
+        { "id": "L-004", "count": 2 },
+        { "id": "L-005", "count": 3 },
+        { "id": "L-006", "count": 1 },
+        { "id": "WS-001", "count": 3 },
+        { "id": "WS-002", "count": 2 },
+        { "id": "LS-001", "count": 3 },
+        { "id": "LS-002", "count": 1 },
+        { "id": "LS-003", "count": 1 }
       ]
     }
   ]
 }
-
