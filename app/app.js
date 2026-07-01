@@ -380,7 +380,8 @@ async function playCard(playerIndex, uidValue) {
   if (phase() !== "メイン") return false;
   const card = player.hand.find((candidate) => candidate.uid === uidValue);
   if (!card || !canPayCost(player, card)) return false;
-  payCost(player, card);
+  const paid = await payCost(playerIndex, card);
+  if (!paid) return false;
   removeByUid(player.hand, uidValue);
 
   if (card.type === "クリーチャー") {
@@ -642,7 +643,22 @@ function availableMana(player) {
   return player.mana.filter((card) => !card.tapped).length;
 }
 
-function payCost(player, card) {
+async function payCost(playerIndex, card) {
+  const player = state.players[playerIndex];
+  if (playerIndex === HUMAN) {
+    const selected = await chooseManaPayment(player, card);
+    if (!selected) return false;
+    selected.forEach((manaCard) => {
+      manaCard.tapped = true;
+    });
+    return true;
+  }
+
+  autoPayCost(player, card);
+  return true;
+}
+
+function autoPayCost(player, card) {
   const matchingMana = player.mana.find((manaCard) => !manaCard.tapped && manaCard.civilization === card.civilization);
   const paid = [];
   if (matchingMana) paid.push(matchingMana);
@@ -655,6 +671,34 @@ function payCost(player, card) {
   paid.forEach((card) => {
     card.tapped = true;
   });
+}
+
+async function chooseManaPayment(player, card) {
+  if (card.cost === 0) return [];
+  const selected = [];
+
+  while (selected.length < card.cost) {
+    const candidates = paymentCandidates(player, card, selected);
+    const choice = await chooseManaCard(
+      `${card.name} の支払いマナ ${selected.length + 1}/${card.cost}`,
+      candidates,
+      selected,
+    );
+    if (!choice) return null;
+    selected.push(choice);
+  }
+
+  return selected.some((manaCard) => manaCard.civilization === card.civilization) ? selected : null;
+}
+
+function paymentCandidates(player, card, selected) {
+  const remainingSlots = card.cost - selected.length;
+  const untapped = player.mana.filter((manaCard) => !manaCard.tapped && !selected.includes(manaCard));
+  const alreadyHasCivilization = selected.some((manaCard) => manaCard.civilization === card.civilization);
+  if (!alreadyHasCivilization && remainingSlots === 1) {
+    return untapped.filter((manaCard) => manaCard.civilization === card.civilization);
+  }
+  return untapped;
 }
 
 function canPayCost(player, card) {
@@ -837,7 +881,7 @@ function renderCard(card, playerIndex, zone) {
   const canDropAttack = playerIndex === CPU && zone === "battle" && card.tapped;
   const reason = cardReason(card, playerIndex, zone);
   return `
-    <article class="card ${canDirectAttack ? "attackable" : ""} ${canDropAttack ? "drop-creature" : ""} ${card.tapped ? "tapped" : ""} ${card.asleep ? "asleep" : ""} ${playable || canMana || canAttack ? "ready" : ""} ${cardFlash(card)}" ${canDirectAttack ? `data-action="select-attacker" data-drag-attack="true" draggable="true" data-uid="${card.uid}"` : ""} ${canDropAttack ? `data-drop-target="creature" data-uid="${card.uid}"` : ""}>
+    <article class="card ${canAttack ? "attackable" : ""} ${canDropAttack ? "drop-creature" : ""} ${card.tapped ? "tapped" : ""} ${card.asleep ? "asleep" : ""} ${playable || canMana || canAttack ? "ready" : ""} ${cardFlash(card)}" ${canAttack ? `${canDirectAttack ? `data-action="select-attacker"` : ""} data-drag-attack="true" draggable="true" data-uid="${card.uid}"` : ""} ${canDropAttack ? `data-drop-target="creature" data-uid="${card.uid}"` : ""}>
       <div class="card-visual ${CIV_CLASS[card.civilization] || ""}">
         <div class="cost-orb">${card.cost}</div>
         <div class="card-type">${escapeHtml(card.civilization)} / ${escapeHtml(card.type)}</div>
@@ -900,6 +944,47 @@ function chooseCard(title, cards, optional = false) {
       ...(optional ? [{ label: "選ばない", uid: "" }] : []),
       ...cards.map((card) => ({
         label: `${card.name} / コスト${card.cost}${card.power ? ` / ${totalPower(card)}` : ""}`,
+        uid: card.uid,
+      })),
+    ].map((item) => `<button type="button" data-choice="${escapeHtml(item.uid)}">${escapeHtml(item.label)}</button>`).join("");
+
+    const handleChoice = (event) => {
+      const button = event.target.closest("[data-choice]");
+      if (!button) return;
+      cleanup();
+      els.dialog.close();
+      resolve(cards.find((card) => card.uid === button.dataset.choice) || null);
+    };
+    const handleClose = () => {
+      cleanup();
+      resolve(null);
+    };
+    const cleanup = () => {
+      els.choiceList.removeEventListener("click", handleChoice);
+      els.dialog.removeEventListener("close", handleClose);
+    };
+    els.choiceList.addEventListener("click", handleChoice);
+    els.dialog.addEventListener("close", handleClose, { once: true });
+    els.dialog.showModal();
+  });
+}
+
+function chooseManaCard(title, cards, selected) {
+  return new Promise((resolve) => {
+    if (cards.length === 0) {
+      setEvent(`${title}: 支払えるマナがありません。`);
+      resolve(null);
+      return;
+    }
+
+    const selectedText = selected.length
+      ? `選択済み: ${selected.map((card) => `${card.civilization}/${shortCardName(card.name)}`).join("、")}`
+      : "選択済み: なし";
+    els.choiceTitle.textContent = `${title} / ${selectedText}`;
+    els.choiceList.innerHTML = [
+      { label: "キャンセル", uid: "" },
+      ...cards.map((card) => ({
+        label: `${card.civilization} / ${card.name}`,
         uid: card.uid,
       })),
     ].map((item) => `<button type="button" data-choice="${escapeHtml(item.uid)}">${escapeHtml(item.label)}</button>`).join("");
