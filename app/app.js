@@ -1127,6 +1127,7 @@ function chooseCard(title, cards, optional = false) {
       resolve(null);
       return;
     }
+    els.dialog.classList.remove("block-choice-dialog");
     els.choiceTitle.textContent = title;
     els.choiceList.innerHTML = [
       ...(optional ? [{ label: "選ばない", uid: "" }] : []),
@@ -1159,6 +1160,7 @@ function chooseCard(title, cards, optional = false) {
 
 function chooseBlockerCard(attacker, blockers) {
   return new Promise((resolve) => {
+    els.dialog.classList.add("block-choice-dialog");
     els.choiceTitle.textContent = "ブロックする？";
     els.choiceList.innerHTML = `
       <div class="block-choice">
@@ -1192,6 +1194,7 @@ function chooseBlockerCard(attacker, blockers) {
       resolve(null);
     };
     const cleanup = () => {
+      els.dialog.classList.remove("block-choice-dialog");
       els.choiceList.removeEventListener("click", handleChoice);
       els.dialog.removeEventListener("close", handleClose);
     };

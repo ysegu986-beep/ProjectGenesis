@@ -955,8 +955,14 @@ dialog h2 {
 }
 
 .choice-card.attacker-preview {
+  min-height: 168px;
+  width: 152px;
   border-color: #b26a22;
   background: #fff4e4;
+}
+
+.choice-card.attacker-preview .card-visual {
+  min-height: 46px;
 }
 
 .blocker-choice-card {
@@ -978,6 +984,10 @@ dialog h2 {
 .no-block-choice {
   justify-self: end;
   min-width: 132px;
+}
+
+.block-choice-dialog menu {
+  display: none;
 }
 
 menu {
