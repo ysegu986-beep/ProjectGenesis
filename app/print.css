@@ -1,0 +1,272 @@
+:root {
+  color-scheme: light;
+  font-family:
+    "Segoe UI",
+    "Yu Gothic UI",
+    "Meiryo",
+    system-ui,
+    sans-serif;
+  color: #181813;
+  background: #efebe1;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+button,
+select {
+  min-height: 36px;
+  border: 1px solid #817969;
+  border-radius: 6px;
+  background: #fffaf0;
+  color: #181813;
+  font: inherit;
+}
+
+button {
+  padding: 0 14px;
+  cursor: pointer;
+}
+
+.print-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  border-bottom: 1px solid #d6cdbc;
+  background: #fff8ea;
+}
+
+.print-toolbar h1 {
+  margin: 0;
+  font-size: 21px;
+  line-height: 1.25;
+}
+
+.print-toolbar p {
+  margin: 4px 0 0;
+  color: #625a4c;
+  font-size: 13px;
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: end;
+  gap: 10px;
+}
+
+.toolbar-actions label {
+  display: grid;
+  gap: 4px;
+  color: #625a4c;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.print-root {
+  display: grid;
+  gap: 22px;
+  padding: 18px;
+}
+
+.deck-sheet {
+  display: grid;
+  gap: 12px;
+}
+
+.deck-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 2px;
+}
+
+.deck-heading h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.deck-heading p {
+  max-width: 720px;
+  margin: 4px 0 0;
+  color: #5c5448;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.deck-count {
+  font-weight: 900;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.print-card {
+  min-height: 308px;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  gap: 8px;
+  padding: 10px;
+  border: 2px solid #2a2923;
+  border-radius: 8px;
+  background: #fffdf7;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.card-top {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+}
+
+.cost {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #202018;
+  color: #fffaf0;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.card-name {
+  min-width: 0;
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+.card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.badge {
+  padding: 3px 7px;
+  border: 1px solid #bdb3a1;
+  border-radius: 999px;
+  background: #eee4d2;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.badge.fire {
+  background: #f5c5b6;
+}
+
+.badge.nature {
+  background: #cfe5bd;
+}
+
+.badge.water {
+  background: #c6def1;
+}
+
+.badge.light {
+  background: #eee6b4;
+}
+
+.card-text {
+  min-height: 88px;
+  padding: 9px;
+  border: 1px solid #d7ccb9;
+  border-radius: 6px;
+  background: #fff8ec;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-top: 1px solid #ddd2c0;
+  padding-top: 8px;
+  color: #5b5246;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.power {
+  color: #181813;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+@media (max-width: 720px) {
+  .print-toolbar,
+  .deck-heading,
+  .toolbar-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+@media print {
+  :root {
+    background: #fff;
+  }
+
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .print-toolbar {
+    display: none;
+  }
+
+  .print-root {
+    display: block;
+    padding: 0;
+  }
+
+  .deck-sheet {
+    display: block;
+    break-after: page;
+  }
+
+  .deck-heading {
+    margin-bottom: 6mm;
+  }
+
+  .deck-heading p,
+  .deck-count {
+    display: none;
+  }
+
+  .card-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4mm;
+  }
+
+  .print-card {
+    min-height: 86mm;
+    border-radius: 3mm;
+    box-shadow: none;
+  }
+}
+

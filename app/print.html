@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Project Genesis Print Sheet</title>
+    <link rel="stylesheet" href="./print.css" />
+  </head>
+  <body>
+    <header class="print-toolbar">
+      <div>
+        <h1>Genesis 印刷用カードシート</h1>
+        <p id="sheet-status">読み込み中</p>
+      </div>
+      <div class="toolbar-actions">
+        <label>
+          表示
+          <select id="deck-filter"></select>
+        </label>
+        <button id="print-button" type="button">印刷</button>
+      </div>
+    </header>
+
+    <main id="print-root" class="print-root"></main>
+
+    <script type="module" src="./print.js"></script>
+  </body>
+</html>
+

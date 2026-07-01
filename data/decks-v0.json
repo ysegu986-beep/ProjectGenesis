@@ -1,0 +1,43 @@
+{
+  "version": "v0",
+  "decks": [
+    {
+      "id": "starter-fire-nature-v0",
+      "name": "火自然アグロ",
+      "goal": "早い攻撃とマナ加速で、相手にシールド判断を迫る。",
+      "cards": [
+        { "id": "F-001", "count": 4 },
+        { "id": "F-002", "count": 4 },
+        { "id": "F-003", "count": 4 },
+        { "id": "F-004", "count": 3 },
+        { "id": "F-005", "count": 2 },
+        { "id": "N-001", "count": 4 },
+        { "id": "N-002", "count": 4 },
+        { "id": "N-003", "count": 3 },
+        { "id": "FS-001", "count": 4 },
+        { "id": "FS-002", "count": 4 },
+        { "id": "NS-001", "count": 4 }
+      ]
+    },
+    {
+      "id": "starter-water-light-v0",
+      "name": "水光コントロール",
+      "goal": "守りながら手札を整え、相手の攻撃テンポを崩してから反撃する。",
+      "cards": [
+        { "id": "W-001", "count": 4 },
+        { "id": "W-002", "count": 4 },
+        { "id": "W-003", "count": 3 },
+        { "id": "W-004", "count": 3 },
+        { "id": "W-005", "count": 2 },
+        { "id": "L-001", "count": 4 },
+        { "id": "L-002", "count": 4 },
+        { "id": "L-003", "count": 3 },
+        { "id": "L-004", "count": 3 },
+        { "id": "WS-001", "count": 4 },
+        { "id": "LS-001", "count": 4 },
+        { "id": "LS-002", "count": 2 }
+      ]
+    }
+  ]
+}
+
