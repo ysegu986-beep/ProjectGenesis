@@ -153,12 +153,20 @@ function beginHumanTurn() {
 
 function startTurn(player, options = {}) {
   const shouldDraw = options.draw !== false;
+  clearTemporaryPower();
   for (const card of [...player.mana, ...player.battle]) {
     card.tapped = false;
     card.asleep = false;
-    card.tempPower = 0;
   }
   if (shouldDraw) drawOne(player);
+}
+
+function clearTemporaryPower() {
+  for (const player of state.players) {
+    for (const card of player.battle) {
+      card.tempPower = 0;
+    }
+  }
 }
 
 function phase() {
