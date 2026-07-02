@@ -564,8 +564,8 @@ button.mana-chip {
 
 .card-row {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
-  gap: 4px;
+  grid-template-columns: repeat(auto-fill, minmax(122px, 1fr));
+  gap: 6px;
 }
 
 .hand-row {
@@ -578,7 +578,7 @@ button.mana-chip {
 
 .hand-row .card,
 .hand-row .card-back {
-  flex: 0 0 126px;
+  flex: 0 0 142px;
 }
 
 .battle-row {
@@ -591,8 +591,8 @@ button.mana-chip {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-height: 132px;
-  padding: 4px;
+  min-height: 152px;
+  padding: 5px;
   border: 2px solid #5d564b;
   border-radius: 8px;
   background: #fffaf0;
@@ -681,7 +681,7 @@ button.mana-chip {
 
 .card-visual {
   position: relative;
-  min-height: 34px;
+  min-height: 42px;
   border-radius: 6px;
   border: 1px solid rgba(0, 0, 0, 0.22);
   overflow: hidden;
@@ -691,7 +691,7 @@ button.mana-chip {
 }
 
 .card-visual.has-image {
-  min-height: 68px;
+  min-height: 78px;
   background: #17120f;
 }
 
@@ -749,15 +749,15 @@ button.mana-chip {
   z-index: 1;
   top: 4px;
   left: 4px;
-  width: 19px;
-  height: 19px;
+  width: 21px;
+  height: 21px;
   display: grid;
   place-items: center;
   border: 2px solid rgba(255, 255, 255, 0.84);
   border-radius: 50%;
   background: rgba(23, 24, 18, 0.82);
   color: #fff;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 900;
 }
 
@@ -784,12 +784,12 @@ button.mana-chip {
   z-index: 1;
   right: 4px;
   top: 4px;
-  min-width: 34px;
+  min-width: 38px;
   padding: 2px 4px;
   border-radius: 6px;
   background: rgba(255, 250, 240, 0.94);
   color: #211d18;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 900;
   text-align: center;
 }
@@ -807,8 +807,8 @@ button.mana-chip {
 }
 
 .card-name {
-  min-height: 17px;
-  font-size: 11px;
+  min-height: 19px;
+  font-size: 12px;
   font-weight: 800;
   line-height: 1.2;
 }
@@ -879,9 +879,9 @@ button.mana-chip {
 .card-text {
   flex: 1;
   color: #3b352d;
-  max-height: 42px;
+  max-height: 50px;
   overflow: hidden;
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.2;
   padding: 2px;
   border: 1px solid #ded2c0;
@@ -896,9 +896,9 @@ button.mana-chip {
 }
 
 .card-actions button {
-  min-height: 22px;
+  min-height: 24px;
   padding: 0 3px;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .compact-zone {
@@ -988,7 +988,7 @@ dialog h2 {
 }
 
 .card-choice-button {
-  flex: 0 0 112px;
+  flex: 0 0 132px;
   min-height: 0;
   padding: 0;
   border: 0;
@@ -1043,9 +1043,9 @@ dialog h2 {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-height: 124px;
-  width: 112px;
-  padding: 4px;
+  min-height: 152px;
+  width: 132px;
+  padding: 5px;
   border: 2px solid #5d564b;
   border-radius: 8px;
   background: #fffaf0;
@@ -1053,22 +1053,22 @@ dialog h2 {
 }
 
 .choice-card .card-visual {
-  min-height: 34px;
+  min-height: 42px;
 }
 
 .choice-card.attacker-preview {
-  min-height: 168px;
+  min-height: 176px;
   width: 152px;
   border-color: #b26a22;
   background: #fff4e4;
 }
 
 .choice-card.attacker-preview .card-visual {
-  min-height: 46px;
+  min-height: 50px;
 }
 
 .blocker-choice-card {
-  flex: 0 0 112px;
+  flex: 0 0 132px;
   min-height: 0;
   padding: 0;
   border: 0;
@@ -1162,6 +1162,6 @@ menu {
 
   .hand-row .card,
   .hand-row .card-back {
-    flex-basis: 116px;
+    flex-basis: 128px;
   }
 }
