@@ -1752,34 +1752,26 @@ function chooseShieldTrigger(card) {
   return new Promise((resolve) => {
     els.dialog.classList.remove("block-choice-dialog");
     els.dialog.classList.add("card-choice-dialog");
+    els.dialog.returnValue = "";
     els.choiceTitle.textContent = "シールドトリガー";
     els.choiceList.innerHTML = `
       <div class="card-choice-grid">
         ${renderPreviewCard(card)}
       </div>
       <div class="card-choice-actions">
-        <button class="no-card-choice" type="button" data-use-trigger="true">使う</button>
-        <button class="cancel-card-use-choice" type="button" data-use-trigger="false">手札に加える</button>
+        <button class="no-card-choice" value="trigger">使う</button>
+        <button class="cancel-card-use-choice" value="hand">手札に加える</button>
       </div>
     `;
 
-    const handleChoice = (event) => {
-      const button = event.target.closest("[data-use-trigger]");
-      if (!button) return;
-      cleanup();
-      els.dialog.close();
-      resolve(button.dataset.useTrigger === "true");
-    };
     const handleClose = () => {
       cleanup();
-      resolve(false);
+      resolve(els.dialog.returnValue === "trigger");
     };
     const cleanup = () => {
       els.dialog.classList.remove("card-choice-dialog");
-      els.choiceList.removeEventListener("click", handleChoice);
       els.dialog.removeEventListener("close", handleClose);
     };
-    els.choiceList.addEventListener("click", handleChoice);
     els.dialog.addEventListener("close", handleClose, { once: true });
     els.dialog.showModal();
   });
