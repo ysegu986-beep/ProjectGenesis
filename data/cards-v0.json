@@ -50,7 +50,8 @@
       "cost": 5,
       "power": 6000,
       "text": "Wブレイカー",
-      "role": "決めに行く大型"
+      "role": "決めに行く大型",
+      "image": "/assets/cards/F-005.png"
     },
     {
       "id": "F-006",
@@ -210,7 +211,8 @@
       "cost": 6,
       "power": 8000,
       "text": "Wブレイカー",
-      "role": "自然文明の重い勝ち筋"
+      "role": "自然文明の重い勝ち筋",
+      "image": "/assets/cards/N-005.png"
     },
     {
       "id": "NS-001",
@@ -340,7 +342,8 @@
       "cost": 6,
       "power": 7000,
       "text": "Wブレイカー。出たとき、カードを1枚引く。",
-      "role": "手札を補充する遅い勝ち筋"
+      "role": "手札を補充する遅い勝ち筋",
+      "image": "/assets/cards/W-005.png"
     },
     {
       "id": "W-006",
@@ -490,7 +493,8 @@
       "cost": 6,
       "power": 6000,
       "text": "Wブレイカー。出たとき、相手クリーチャーを1体タップしてよい。",
-      "role": "反撃の切り札"
+      "role": "反撃の切り札",
+      "image": "/assets/cards/L-006.png"
     },
     {
       "id": "LS-001",
@@ -680,7 +684,8 @@
       "cost": 6,
       "power": 7000,
       "text": "Wブレイカー",
-      "role": "重い勝ち筋"
+      "role": "重い勝ち筋",
+      "image": "/assets/cards/D-010.png"
     },
     {
       "id": "D-011",

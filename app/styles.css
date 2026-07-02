@@ -667,6 +667,29 @@ button.mana-chip {
     #ded4c2;
 }
 
+.card-visual.has-image {
+  min-height: 62px;
+  background: #17120f;
+}
+
+.card-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-visual.has-image::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.02) 42%, rgba(0, 0, 0, 0.36)),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.24), rgba(0, 0, 0, 0) 35%, rgba(0, 0, 0, 0.2));
+  pointer-events: none;
+}
+
 .card-visual.fire {
   background:
     linear-gradient(135deg, rgba(255, 244, 228, 0.65), rgba(255, 244, 228, 0)),
@@ -700,6 +723,7 @@ button.mana-chip {
 
 .cost-orb {
   position: absolute;
+  z-index: 1;
   top: 4px;
   left: 4px;
   width: 19px;
@@ -716,6 +740,7 @@ button.mana-chip {
 
 .card-type {
   position: absolute;
+  z-index: 1;
   right: 4px;
   bottom: 4px;
   padding: 1px 4px;
@@ -733,6 +758,7 @@ button.mana-chip {
 .power-box,
 .spell-mark {
   position: absolute;
+  z-index: 1;
   right: 4px;
   top: 4px;
   min-width: 34px;

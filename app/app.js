@@ -1619,11 +1619,7 @@ function renderCard(card, playerIndex, zone) {
   const reason = cardReason(card, playerIndex, zone);
   return `
     <article class="card ${canAttack ? "attackable" : ""} ${canDropAttack ? "drop-creature" : ""} ${card.tapped ? "tapped" : ""} ${card.asleep ? "asleep" : ""} ${playable || canMana || canAttack ? "ready" : ""} ${cardFlash(card)}" ${canAttack ? `${canDirectAttack ? `data-action="select-attacker"` : ""} data-drag-attack="true" draggable="true" data-uid="${card.uid}"` : ""} ${canDropAttack ? `data-drop-target="creature" data-uid="${card.uid}"` : ""}>
-      <div class="card-visual ${CIV_CLASS[card.civilization] || ""}">
-        <div class="cost-orb">${card.cost}</div>
-        <div class="card-type">${escapeHtml(card.civilization)} / ${escapeHtml(card.type)}</div>
-        ${card.type === "クリーチャー" ? `<div class="power-box">${totalPower(card)}</div>` : `<div class="spell-mark">SPELL</div>`}
-      </div>
+      ${renderCardVisual(card)}
       <div class="card-name">${escapeHtml(card.name)}</div>
       <div class="card-status">
         ${card.text.includes("ブロッカー") ? `<span class="blocker-status" title="ブロッカー">B</span>` : ""}
@@ -1649,14 +1645,21 @@ function displayCardText(card) {
     .trim() || "効果なし";
 }
 
+function renderCardVisual(card) {
+  return `
+    <div class="card-visual ${CIV_CLASS[card.civilization] || ""} ${card.image ? "has-image" : ""}">
+      ${card.image ? `<img class="card-art" src="${escapeHtml(card.image)}" alt="">` : ""}
+      <div class="cost-orb">${card.cost}</div>
+      <div class="card-type">${escapeHtml(card.civilization)} / ${escapeHtml(card.type)}</div>
+      ${card.type === "クリーチャー" ? `<div class="power-box">${totalPower(card)}</div>` : `<div class="spell-mark">SPELL</div>`}
+    </div>
+  `;
+}
+
 function renderPreviewCard(card, extraClass = "") {
   return `
     <article class="choice-card ${extraClass} ${card.tapped ? "tapped" : ""} ${card.asleep ? "asleep" : ""}">
-      <div class="card-visual ${CIV_CLASS[card.civilization] || ""}">
-        <div class="cost-orb">${card.cost}</div>
-        <div class="card-type">${escapeHtml(card.civilization)} / ${escapeHtml(card.type)}</div>
-        ${card.type === "クリーチャー" ? `<div class="power-box">${totalPower(card)}</div>` : `<div class="spell-mark">SPELL</div>`}
-      </div>
+      ${renderCardVisual(card)}
       <div class="card-name">${escapeHtml(card.name)}</div>
       <div class="card-status">
         ${card.text.includes("ブロッカー") ? `<span class="blocker-status" title="ブロッカー">B</span>` : ""}
