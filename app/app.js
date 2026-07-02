@@ -26,7 +26,6 @@ const els = {
   newGame: document.querySelector("#new-game"),
   deckSelect: document.querySelector("#deck-select"),
   autoPay: document.querySelector("#auto-pay"),
-  skipMana: document.querySelector("#skip-mana"),
   nextPhase: document.querySelector("#next-phase"),
   endTurn: document.querySelector("#end-turn"),
   expandLog: document.querySelector("#expand-log"),
@@ -53,7 +52,6 @@ async function init() {
     startGame();
   });
   els.autoPay.addEventListener("click", toggleAutoPay);
-  els.skipMana.addEventListener("click", skipMana);
   els.nextPhase.addEventListener("click", nextPhase);
   els.endTurn.addEventListener("click", endHumanTurn);
   els.expandLog.addEventListener("click", () => {
@@ -147,7 +145,7 @@ function beginHumanTurn() {
   state.phaseIndex = 0;
   state.manaPlaced = false;
   startTurn(state.players[HUMAN], { draw: state.turn !== 1 });
-  setEvent("あなたのターン。手札から1枚マナに置こう。", { zones: ["human-hand"] });
+  setEvent("あなたのターン。マナに置くか、そのまま召喚/詠唱できます。", { zones: ["human-hand"] });
   render();
 }
 
@@ -175,12 +173,8 @@ function phase() {
 
 function nextPhase() {
   if (!canHumanAct()) return;
-  if (phase() === "マナ" && !state.manaPlaced && state.players[HUMAN].hand.length > 0) {
-    setEvent("マナを置くか、上の「マナパス」でメインへ進めます。", { zones: ["human-hand"] });
-    render();
-    return;
-  }
   if (phase() === "マナ") {
+    state.manaPlaced = true;
     state.phaseIndex = 1;
     setEvent("メインフェーズ。使えるカードが光ります。", { zones: ["human-hand"] });
   } else if (phase() === "メイン") {
@@ -190,14 +184,6 @@ function nextPhase() {
     endHumanTurn();
     return;
   }
-  render();
-}
-
-function skipMana() {
-  if (!canHumanAct() || phase() !== "マナ" || state.manaPlaced) return;
-  state.manaPlaced = true;
-  state.phaseIndex = 1;
-  setEvent("マナチャージをパスしてメインフェーズへ。", { zones: ["human-hand"] });
   render();
 }
 
@@ -1468,8 +1454,7 @@ function render() {
   els.autoPay.classList.toggle("active", state.autoPay);
   els.autoPay.setAttribute("aria-pressed", String(state.autoPay));
   els.autoPay.disabled = Boolean(state.pendingPayment);
-  els.nextPhase.disabled = !canHumanAct() || state.pendingPayment || (phase() === "マナ" && !state.manaPlaced && state.players[HUMAN].hand.length > 0);
-  els.skipMana.disabled = !canHumanAct() || state.pendingPayment || phase() !== "マナ" || state.manaPlaced;
+  els.nextPhase.disabled = !canHumanAct() || state.pendingPayment;
   els.endTurn.disabled = !canHumanAct() || state.pendingPayment;
 
   els.scoreboard.innerHTML = state.players.map(renderSummary).join("");

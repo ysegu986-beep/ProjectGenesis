@@ -42,12 +42,11 @@ button:disabled {
 
 .app-shell {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 104px;
-  grid-template-rows: 42px 50px minmax(0, 1fr);
+  grid-template-columns: 176px minmax(0, 1fr) 118px;
+  grid-template-rows: 42px minmax(0, 1fr);
   grid-template-areas:
-    "topbar topbar"
-    "score score"
-    "field controls";
+    "topbar topbar topbar"
+    "score field controls";
   height: 100vh;
   min-height: 640px;
   overflow: hidden;
@@ -112,8 +111,8 @@ button:disabled {
   flex-direction: column;
   gap: 6px;
   align-self: stretch;
-  justify-content: flex-end;
-  padding: 5px 8px 8px 0;
+  justify-content: flex-start;
+  padding: 8px 8px 8px 0;
   border-left: 1px solid #d8d0c2;
 }
 
@@ -135,17 +134,20 @@ button:disabled {
 .scoreboard {
   grid-area: score;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
+  align-content: start;
   gap: 6px;
-  padding: 5px 6px 0 8px;
+  padding: 8px 6px 8px 8px;
+  border-right: 1px solid #d8d0c2;
+  overflow-y: auto;
 }
 
 .player-summary {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr;
   gap: 8px;
-  align-items: center;
-  padding: 5px 8px;
+  align-items: start;
+  padding: 8px;
   border: 1px solid #d8d0c2;
   border-radius: 8px;
   background: #fffaf0;
@@ -158,7 +160,16 @@ button:disabled {
 
 .player-summary h2 {
   margin: 0;
-  font-size: 13px;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.player-summary h2 span {
+  display: block;
+  margin-top: 2px;
+  color: #61594d;
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .stats {
@@ -175,10 +186,17 @@ button:disabled {
   font-size: 11px;
 }
 
+.player-summary strong {
+  justify-self: start;
+  min-height: 16px;
+  color: #2f6b72;
+  font-size: 11px;
+}
+
 .battlefield {
   grid-area: field;
   min-height: 0;
-  padding: 5px 6px 8px 8px;
+  padding: 8px 6px;
   overflow: hidden;
 }
 
@@ -233,7 +251,7 @@ button:disabled {
   min-height: 0;
   display: grid;
   grid-template-columns: 82px minmax(0, 1fr) 62px;
-  grid-template-rows: 22px minmax(0, 1.1fr) 36px minmax(0, 1.45fr);
+  grid-template-rows: 18px minmax(0, 1.1fr) 36px minmax(0, 1.58fr);
   grid-template-areas:
     "header header header"
     "left battle right"
@@ -261,19 +279,19 @@ button:disabled {
   align-items: baseline;
   justify-content: space-between;
   gap: 8px;
-  padding: 3px 7px;
+  padding: 2px 7px;
   border-bottom: 1px solid #ded2c0;
   background: #f2e7d5;
 }
 
 .duel-area-header h2 {
   margin: 0;
-  font-size: 13px;
+  font-size: 11px;
 }
 
 .duel-area-header span {
   color: #61594d;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
 }
 
@@ -555,7 +573,7 @@ button.mana-chip {
 
 .hand-row .card,
 .hand-row .card-back {
-  flex: 0 0 112px;
+  flex: 0 0 126px;
 }
 
 .battle-row {
@@ -568,7 +586,7 @@ button.mana-chip {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-height: 124px;
+  min-height: 132px;
   padding: 4px;
   border: 2px solid #5d564b;
   border-radius: 8px;
@@ -668,7 +686,7 @@ button.mana-chip {
 }
 
 .card-visual.has-image {
-  min-height: 62px;
+  min-height: 68px;
   background: #17120f;
 }
 
@@ -1078,15 +1096,10 @@ menu {
 
 @media (max-width: 980px) {
   .app-shell {
-    grid-template-columns: minmax(0, 1fr) 96px;
+    grid-template-columns: 148px minmax(0, 1fr) 104px;
     grid-template-areas:
-      "topbar topbar"
-      "score score"
-      "field controls";
-  }
-
-  .game-table {
-    grid-template-columns: 1fr;
+      "topbar topbar topbar"
+      "score field controls";
   }
 }
 
@@ -1129,5 +1142,20 @@ menu {
   .scoreboard,
   .zone-grid {
     grid-template-columns: 1fr;
+  }
+
+  .scoreboard {
+    border-right: 0;
+    border-bottom: 1px solid #d8d0c2;
+    overflow: visible;
+  }
+
+  .player-summary {
+    padding: 6px 8px;
+  }
+
+  .hand-row .card,
+  .hand-row .card-back {
+    flex-basis: 116px;
   }
 }
