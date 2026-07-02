@@ -306,7 +306,11 @@ async function handleBattlefieldClick(event) {
     putMana(HUMAN, uidValue);
   }
   if (action === "play") {
-    playCard(HUMAN, uidValue);
+    if (phase() === "マナ" && !state.manaPlaced) {
+      state.manaPlaced = true;
+      state.phaseIndex = 1;
+    }
+    await playCard(HUMAN, uidValue);
   }
   if (action === "select-attacker") {
     if (phase() === "メイン") {
@@ -1611,7 +1615,8 @@ function shortCardName(name) {
 
 function renderCard(card, playerIndex, zone) {
   const humanTurn = canHumanAct() && !state.pendingPayment && playerIndex === HUMAN;
-  const playable = humanTurn && zone === "hand" && phase() === "メイン" && canPayCost(state.players[HUMAN], card);
+  const canPlayFromCurrentPhase = phase() === "メイン" || (phase() === "マナ" && !state.manaPlaced);
+  const playable = humanTurn && zone === "hand" && canPlayFromCurrentPhase && canPayCost(state.players[HUMAN], card);
   const canMana = humanTurn && zone === "hand" && phase() === "マナ" && !state.manaPlaced;
   const canAttack = humanTurn && zone === "battle" && canEnterAttackWith(card);
   const canDirectAttack = canAttack && phase() === "アタック";
