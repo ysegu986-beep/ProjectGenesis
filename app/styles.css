@@ -111,8 +111,8 @@ button:disabled {
   flex-direction: column;
   gap: 6px;
   align-self: stretch;
-  justify-content: flex-start;
-  padding: 8px 8px 8px 0;
+  justify-content: flex-end;
+  padding: 8px 8px 14px 0;
   border-left: 1px solid #d8d0c2;
 }
 
@@ -173,17 +173,22 @@ button:disabled {
 }
 
 .stats {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 4px;
   margin-top: 3px;
 }
 
 .stat {
-  padding: 1px 5px;
-  border-radius: 999px;
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 2px 6px;
+  border-radius: 6px;
   background: #eee2cf;
   font-size: 11px;
+  line-height: 1.15;
+  white-space: nowrap;
 }
 
 .player-summary strong {
@@ -1096,7 +1101,7 @@ menu {
 
 @media (max-width: 980px) {
   .app-shell {
-    grid-template-columns: 148px minmax(0, 1fr) 104px;
+    grid-template-columns: 160px minmax(0, 1fr) 104px;
     grid-template-areas:
       "topbar topbar topbar"
       "score field controls";
@@ -1129,6 +1134,7 @@ menu {
   .topbar-actions {
     flex-direction: row;
     flex-wrap: wrap;
+    justify-content: flex-start;
     padding: 5px 8px 0;
     border-left: 0;
     border-bottom: 1px solid #d8d0c2;
