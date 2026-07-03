@@ -1608,7 +1608,7 @@ function renderCard(card, playerIndex, zone) {
   const canDropAttack = playerIndex === CPU && zone === "battle" && card.tapped;
   const reason = cardReason(card, playerIndex, zone);
   return `
-    <article class="card ${canAttack ? "attackable" : ""} ${canDropAttack ? "drop-creature" : ""} ${card.tapped ? "tapped" : ""} ${card.asleep ? "asleep" : ""} ${playable || canMana || canAttack ? "ready" : ""} ${cardFlash(card)}" ${canAttack ? `${canDirectAttack ? `data-action="select-attacker"` : ""} data-drag-attack="true" draggable="true" data-uid="${card.uid}"` : ""} ${canDropAttack ? `data-drop-target="creature" data-uid="${card.uid}"` : ""}>
+    <article class="card zone-${zone} ${canAttack ? "attackable" : ""} ${canDropAttack ? "drop-creature" : ""} ${card.tapped ? "tapped" : ""} ${card.asleep ? "asleep" : ""} ${playable || canMana || canAttack ? "ready" : ""} ${cardFlash(card)}" ${canAttack ? `data-action="select-attacker" data-drag-attack="true" draggable="true" data-uid="${card.uid}"` : ""} ${canDropAttack ? `data-drop-target="creature" data-uid="${card.uid}"` : ""}>
       ${renderCardVisual(card)}
       <div class="card-name">${escapeHtml(card.name)}</div>
       <div class="card-status">

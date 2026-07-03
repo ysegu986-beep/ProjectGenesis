@@ -599,6 +599,35 @@ button.mana-chip {
   box-shadow: 0 2px 0 rgba(36, 32, 26, 0.18);
 }
 
+.card.zone-battle {
+  min-height: 132px;
+}
+
+.card.zone-battle .card-visual {
+  min-height: 38px;
+}
+
+.card.zone-battle .card-visual.has-image {
+  min-height: 64px;
+}
+
+.card.zone-battle .card-name {
+  min-height: 16px;
+  font-size: 11px;
+}
+
+.card.zone-battle .card-status {
+  min-height: 10px;
+}
+
+.card.zone-battle .card-text {
+  display: none;
+}
+
+.card.zone-battle .card-actions {
+  margin-top: auto;
+}
+
 .card.ready {
   border-color: #2f6b72;
   box-shadow:
