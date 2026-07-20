@@ -648,7 +648,8 @@
       "cost": 1,
       "power": 1000,
       "text": "効果なし",
-      "role": "序盤の攻撃役"
+      "role": "序盤の攻撃役",
+      "image": "/assets/cards/D-001.png"
     },
     {
       "id": "D-002",
@@ -658,7 +659,8 @@
       "cost": 2,
       "power": 2000,
       "text": "ブロッカー",
-      "role": "軽い防御"
+      "role": "軽い防御",
+      "image": "/assets/cards/D-002.png"
     },
     {
       "id": "D-003",
@@ -668,7 +670,8 @@
       "cost": 3,
       "power": 2000,
       "text": "出たとき、相手のパワー2000以下のクリーチャーを1体破壊してよい。",
-      "role": "小型除去"
+      "role": "小型除去",
+      "image": "/assets/cards/D-003.png"
     },
     {
       "id": "D-004",
@@ -689,7 +692,8 @@
       "cost": 5,
       "power": 6000,
       "text": "Wブレイカー",
-      "role": "中盤の決め札"
+      "role": "中盤の決め札",
+      "image": "/assets/cards/D-005.png"
     },
     {
       "id": "D-006",
@@ -699,7 +703,8 @@
       "cost": 2,
       "power": 3000,
       "text": "効果なし",
-      "role": "序盤のサイズ役"
+      "role": "序盤のサイズ役",
+      "image": "/assets/cards/D-006.png"
     },
     {
       "id": "D-007",
@@ -709,7 +714,8 @@
       "cost": 4,
       "power": 4000,
       "text": "ブロッカー",
-      "role": "中盤の防御"
+      "role": "中盤の防御",
+      "image": "/assets/cards/D-007.png"
     },
     {
       "id": "D-008",
@@ -719,7 +725,8 @@
       "cost": 4,
       "power": 5000,
       "text": "効果なし",
-      "role": "中盤の安定打点"
+      "role": "中盤の安定打点",
+      "image": "/assets/cards/D-008.png"
     },
     {
       "id": "D-009",
@@ -729,7 +736,8 @@
       "cost": 5,
       "power": 3000,
       "text": "出たとき、相手のパワー3000以下のクリーチャーを1体破壊してよい。",
-      "role": "中型手前への除去"
+      "role": "中型手前への除去",
+      "image": "/assets/cards/D-009.png"
     },
     {
       "id": "D-010",
@@ -750,7 +758,8 @@
       "cost": 4,
       "power": 2000,
       "text": "出たとき、自分の墓地からコスト2以下のクリーチャーを1体バトルゾーンに出してよい。",
-      "role": "小型復活"
+      "role": "小型復活",
+      "image": "/assets/cards/D-011.png"
     },
     {
       "id": "DS-001",
@@ -760,7 +769,8 @@
       "cost": 2,
       "power": null,
       "text": "シールドトリガー。相手のパワー2000以下のクリーチャーを1体破壊する。",
-      "role": "軽い小型除去"
+      "role": "軽い小型除去",
+      "image": "/assets/cards/DS-001.png"
     },
     {
       "id": "DS-002",
@@ -770,7 +780,8 @@
       "cost": 3,
       "power": null,
       "text": "相手は手札を1枚捨てる。",
-      "role": "手札破壊呪文"
+      "role": "手札破壊呪文",
+      "image": "/assets/cards/DS-002.png"
     },
     {
       "id": "DS-003",
@@ -780,7 +791,8 @@
       "cost": 5,
       "power": null,
       "text": "自分の墓地からコスト3以下のクリーチャーを1体バトルゾーンに出す。",
-      "role": "終盤に墓地から盤面を戻す"
+      "role": "終盤に墓地から盤面を戻す",
+      "image": "/assets/cards/DS-003.png"
     },
     {
       "id": "DS-004",
@@ -790,7 +802,8 @@
       "cost": 4,
       "power": null,
       "text": "相手のパワー5000以下のクリーチャーを1体破壊する。",
-      "role": "中型まで届く除去"
+      "role": "中型まで届く除去",
+      "image": "/assets/cards/DS-004.png"
     }
   ]
 }
